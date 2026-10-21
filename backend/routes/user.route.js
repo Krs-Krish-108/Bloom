@@ -6,9 +6,7 @@ import {
     getProfile,
     editProfile,
     followOrUnfollow,
-    getSuggestedUsers,
-    getAllUsers,
-    deleteUserAccount
+    getSuggestedUsers
 } from "../controllers/user.controller.js";
 import upload from "../middlewares/multer.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
@@ -22,9 +20,5 @@ router.route('/:id/profile').get(isAuthenticated, getProfile);
 router.route('/profile/edit').post(isAuthenticated, upload.single('profilePicture'), editProfile);
 router.route('/suggested').get(isAuthenticated, getSuggestedUsers);
 router.route('/followorunfollow/:id').post(isAuthenticated, followOrUnfollow);
-
-// Admin-only User Management Routes
-router.route('/all-users').get(isAuthenticated, getAllUsers);
-router.route('/delete/:id').delete(isAuthenticated, deleteUserAccount);
 
 export default router;

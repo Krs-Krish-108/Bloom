@@ -6,7 +6,6 @@ import {
   MessageCircle,
   PlusSquare,
   LayoutGrid,
-  Users,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
@@ -18,7 +17,6 @@ import { setAuthUser } from "@/redux/authSlice";
 import { clearUnreadMessages } from "@/redux/chatSlice";
 import CreatePost from "./CreatePost";
 import NotificationDrawer from "./NotificationDrawer";
-import AdminAccountsDrawer from "./AdminAccountsDrawer";
 import BloomLogo from "@/components/ui/BloomLogo";
 
 const LeftSidebar = () => {
@@ -32,7 +30,6 @@ const LeftSidebar = () => {
   const [open, setOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [isAccountsOpen, setIsAccountsOpen] = useState(false);
 
   const isInActiveChat = location.pathname === "/chat" && Boolean(selectedUser);
 
@@ -56,31 +53,22 @@ const LeftSidebar = () => {
       logoutHandler();
     } else if (textType === "Home") {
       setIsNotificationOpen(false);
-      setIsAccountsOpen(false);
       navigate("/");
     } else if (textType === "Gallery") {
       setIsNotificationOpen(false);
-      setIsAccountsOpen(false);
       navigate("/gallery");
     } else if (textType === "Messages") {
       setIsNotificationOpen(false);
-      setIsAccountsOpen(false);
       dispatch(clearUnreadMessages());
       navigate("/chat");
     } else if (textType === "Profile") {
       setIsNotificationOpen(false);
-      setIsAccountsOpen(false);
       navigate(`/profile/${user?._id || "my_profile"}`);
     } else if (textType === "Create") {
       setIsNotificationOpen(false);
-      setIsAccountsOpen(false);
       setOpen(true);
     } else if (textType === "Notifications") {
-      setIsAccountsOpen(false);
       setIsNotificationOpen((prev) => !prev);
-    } else if (textType === "Accounts") {
-      setIsNotificationOpen(false);
-      setIsAccountsOpen((prev) => !prev);
     }
   };
 
@@ -114,23 +102,6 @@ const LeftSidebar = () => {
       icon: <PlusSquare className="w-6 h-6 stroke-[2]" />,
       text: "Create",
     },
-    ...(user?.isAdmin
-      ? [
-          {
-            icon: (
-              <Users
-                className={`w-6 h-6 stroke-[2] transition-colors ${
-                  isAccountsOpen ? "text-neutral-950 font-bold" : ""
-                }`}
-              />
-            ),
-            text: "Accounts",
-            active: isAccountsOpen,
-          },
-        ]
-      : []),
-
-
     {
       icon: (
         <Avatar className="w-6 h-6 border border-neutral-300">
@@ -144,7 +115,7 @@ const LeftSidebar = () => {
     },
   ];
 
-  const sidebarExpanded = isHovered && !isNotificationOpen && !isAccountsOpen;
+  const sidebarExpanded = isHovered && !isNotificationOpen;
 
   return (
     <>
@@ -411,12 +382,6 @@ const LeftSidebar = () => {
       <NotificationDrawer
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
-      />
-
-      {/* Slide-out Admin Accounts Drawer */}
-      <AdminAccountsDrawer
-        isOpen={isAccountsOpen}
-        onClose={() => setIsAccountsOpen(false)}
       />
 
       <CreatePost open={open} setOpen={setOpen} />
