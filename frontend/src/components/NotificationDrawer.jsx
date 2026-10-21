@@ -81,85 +81,7 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
     }
   };
 
-  // 1-2 Suggested users strictly (as user specified: "1-2 par 1-2 se zyada mat daalna")
-  const topSuggestedUsers = (suggestedUsers || []).slice(0, 1);
-
-  // Baseline mock/seed notifications matching the user's exact uploaded Instagram layout
-  const defaultNotifications = [
-    {
-      id: "mock-1",
-      type: "reply",
-      userId: "sagar_builds_id",
-      username: "sagar_builds",
-      userAvatar:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      isVerified: true,
-      actionText: "replied to your comment on sagar_builds's post:",
-      replyMention: `@${user?.username || "krs_krish_108"}`,
-      replyText: "Thanks! Kindly check your DMs.",
-      date: "Aug 09",
-      postThumbnail:
-        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=150&auto=format&fit=crop&q=80",
-      isFromFollowedUser: true,
-    },
-    {
-      id: "mock-2",
-      type: "reply",
-      userId: "sagar_builds_id",
-      username: "sagar_builds",
-      userAvatar:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      isVerified: true,
-      actionText: "replied to your comment on sagar_builds's post:",
-      replyMention: `@${user?.username || "krs_krish_108"}`,
-      replyText: "Sent you a message! Check it out!",
-      date: "Aug 09",
-      postThumbnail:
-        "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=150&auto=format&fit=crop&q=80",
-      isFromFollowedUser: true,
-    },
-    // Suggested user embedded in notification (as shown in reference screenshot)
-    {
-      id: "mock-suggested-1",
-      type: "suggested",
-      userId: topSuggestedUsers[0]?._id || "ars_hu636_id",
-      username: topSuggestedUsers[0]?.username || "ars_hu636",
-      userAvatar:
-        topSuggestedUsers[0]?.profilePicture ||
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      actionText: ", who you might know, is on Bloom.",
-      date: "Aug 03",
-      isSuggested: true,
-      isFromFollowedUser: false,
-    },
-    {
-      id: "mock-4",
-      type: "follow",
-      userId: "rocks_yrr_id",
-      username: "rocks_yrr",
-      userAvatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-      actionText: "started following you.",
-      date: "Jun 23",
-      isFromFollowedUser: true,
-      initialFollowing: true,
-    },
-    {
-      id: "mock-5",
-      type: "like",
-      userId: "alex_design_id",
-      username: "alex_creator",
-      userAvatar:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-      actionText: "liked your post.",
-      date: "Jun 18",
-      postThumbnail:
-        "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80",
-      isFromFollowedUser: false,
-    },
-  ];
-
-  // Map incoming real-time notifications from Redux (like, comment, reply, follow)
+  // Map incoming real-time notifications from Redux (like, comment, reply, follow, message)
   const liveNotifications = (likeNotification || []).map((notif, idx) => {
     const isReply =
       notif.type === "reply" ||
@@ -167,9 +89,10 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
     const isLike = notif.type === "like";
     const isComment = notif.type === "comment";
     const isFollow = notif.type === "follow";
+    const isMessage = notif.type === "message";
 
     let replyMention = "";
-    let replyText = notif.commentText || "";
+    let replyText = notif.commentText || notif.messageText || "";
     if (isReply && notif.commentText) {
       const match = notif.commentText.match(/^(@\S+)\s*(.*)$/);
       if (match) {
@@ -179,9 +102,9 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
     }
 
     return {
-      id: `live-${idx}-${notif.userId}-${notif.postId || ""}`,
-      type: notif.type || (isLike ? "like" : "comment"),
-      userId: notif.userId,
+      id: notif._id || `live-${idx}-${notif.userId}-${notif.postId || notif.createdAt || idx}`,
+      type: notif.type || (isLike ? "like" : isComment ? "comment" : isMessage ? "message" : "like"),
+      userId: notif.userId || notif.userDetails?._id,
       username: notif.userDetails?.username || "Someone",
       userAvatar: notif.userDetails?.profilePicture || "",
       isVerified: false,
@@ -191,24 +114,31 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
         ? "commented on your post:"
         : isFollow
         ? "started following you."
+        : isMessage
+        ? "sent you a message:"
         : "liked your post.",
       replyMention,
-      replyText: isComment && !isReply ? `"${replyText}"` : replyText,
-      date: "Just now",
+      replyText: (isComment && !isReply) || isMessage ? (replyText ? `"${replyText}"` : "") : replyText,
+      date: notif.createdAt
+        ? new Date(notif.createdAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })
+        : "Just now",
       postThumbnail:
         notif.postMedia ||
         posts?.find((p) => p._id === notif.postId)?.media?.[0]?.url ||
         posts?.find((p) => p._id === notif.postId)?.image ||
         "",
       postId: notif.postId,
-      isFromFollowedUser: isFollowingUser(notif.userId),
+      isFromFollowedUser: isFollowingUser(notif.userId || notif.userDetails?._id),
     };
   });
 
-  // Combine live notifications at the top of Recent followed by default notifications
-  const allNotifications = [...liveNotifications, ...defaultNotifications];
+  // Use only live real-time notifications
+  const allNotifications = liveNotifications;
 
-  // Apply Filter Pills: "All", "People you follow", "Comments", "Likes"
+  // Apply Filter Pills: "All", "People you follow", "Comments", "Likes", "Messages"
   const filteredNotifications = allNotifications.filter((item) => {
     if (activeFilter === "All") return true;
     if (activeFilter === "People you follow") {
@@ -219,6 +149,9 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
     }
     if (activeFilter === "Likes") {
       return item.type === "like";
+    }
+    if (activeFilter === "Messages") {
+      return item.type === "message";
     }
     return true;
   });
@@ -261,6 +194,7 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
               { id: "People you follow", label: "People you follow" },
               { id: "Comments", label: "Comments" },
               { id: "Likes", label: "Likes" },
+              { id: "Messages", label: "Messages" },
             ].map((pill) => {
               const isActive = activeFilter === pill.id;
               return (
@@ -289,7 +223,7 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
         <div className="flex-1 overflow-y-auto px-6 py-2 space-y-3 divide-y divide-transparent">
           {filteredNotifications.length === 0 ? (
             <div className="py-12 text-center text-xs text-neutral-400">
-              No notifications found in {activeFilter.toLowerCase()}
+              No notifications yet
             </div>
           ) : (
             filteredNotifications.map((item) => {
@@ -306,7 +240,10 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
                   {/* Left: Avatar */}
                   <div
                     onClick={() => {
-                      if (item.userId) navigate(`/profile/${item.userId}`);
+                      if (item.userId) {
+                        navigate(`/profile/${item.userId}`);
+                        onClose();
+                      }
                     }}
                     className="relative shrink-0 cursor-pointer"
                   >
@@ -323,10 +260,27 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
                   </div>
 
                   {/* Middle: Content */}
-                  <div className="flex-1 text-[13px] leading-snug text-neutral-800 pr-1">
+                  <div
+                    onClick={() => {
+                      if (item.type === "message") {
+                        navigate("/chat");
+                        onClose();
+                      } else if (item.postId) {
+                        navigate(`/?post=${item.postId}`);
+                        onClose();
+                      }
+                    }}
+                    className={`flex-1 text-[13px] leading-snug text-neutral-800 pr-1 ${
+                      item.type === "message" || item.postId ? "cursor-pointer" : ""
+                    }`}
+                  >
                     <span
-                      onClick={() => {
-                        if (item.userId) navigate(`/profile/${item.userId}`);
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (item.userId) {
+                          navigate(`/profile/${item.userId}`);
+                          onClose();
+                        }
                       }}
                       className="font-semibold text-neutral-900 cursor-pointer hover:underline inline-flex items-center"
                     >
@@ -347,7 +301,7 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
                     </span>
                   </div>
 
-                  {/* Right Action: Post Thumbnail OR Follow/Following button */}
+                  {/* Right Action: Post Thumbnail OR Follow/Following button OR Chat button */}
                   <div className="shrink-0 flex items-center justify-center">
                     {item.postThumbnail ? (
                       <img
@@ -356,6 +310,7 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
                         onClick={() => {
                           if (item.postId) {
                             navigate(`/?post=${item.postId}`);
+                            onClose();
                           }
                         }}
                         className="w-11 h-11 rounded-lg object-cover border border-neutral-200 cursor-pointer hover:opacity-90 transition-opacity"
@@ -370,6 +325,16 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
                         }`}
                       >
                         {followingStatus ? "Following" : "Follow"}
+                      </button>
+                    ) : item.type === "message" ? (
+                      <button
+                        onClick={() => {
+                          navigate("/chat");
+                          onClose();
+                        }}
+                        className="text-xs font-semibold px-4 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-800 transition-all cursor-pointer"
+                      >
+                        Chat
                       </button>
                     ) : null}
                   </div>

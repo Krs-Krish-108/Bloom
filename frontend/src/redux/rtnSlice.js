@@ -17,7 +17,8 @@ const rtnSlice = createSlice({
             item.userId === action.payload.userId &&
             item.type === action.payload.type &&
             item.postId === action.payload.postId &&
-            item.commentText === action.payload.commentText
+            item.commentText === action.payload.commentText &&
+            item.messageText === action.payload.messageText
         );
         if (!isDuplicate) {
           state.likeNotification.unshift(action.payload);

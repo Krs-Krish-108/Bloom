@@ -9,127 +9,6 @@ import axios from "axios";
 import { POST_API_END_POINT } from "@/utils/constants";
 import { toast } from "sonner";
 
-// High-quality aesthetic fallback pins with variable heights to guarantee a true Pinterest masonry feel
-const seedGalleryPins = [
-  {
-    _id: "seed-1",
-    mediaUrl: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80",
-    mediaType: "image",
-    aspectRatio: "aspect-[3/4]",
-    caption: "Midnight aurora over the mountains #nature #celestial",
-    author: {
-      username: "aurora_explorer",
-      profilePicture: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    },
-    likes: ["1", "2", "3", "4", "5", "6"],
-    comments: [{}, {}],
-  },
-  {
-    _id: "seed-2",
-    mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    mediaType: "video",
-    aspectRatio: "aspect-[9/16]",
-    caption: "Cinematic trail run in Oregon #adventure #cinematic",
-    author: {
-      username: "matt_cooper",
-      profilePicture: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    },
-    likes: ["1", "2", "3"],
-    comments: [{}],
-  },
-  {
-    _id: "seed-3",
-    mediaUrl: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=800&auto=format&fit=crop&q=80",
-    mediaType: "image",
-    aspectRatio: "aspect-square",
-    caption: "Cozy morning sunshine and coffee moments #lifestyle",
-    author: {
-      username: "sofia_martinez",
-      profilePicture: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-    },
-    likes: ["1", "2", "3", "4"],
-    comments: [{}, {}, {}],
-  },
-  {
-    _id: "seed-4",
-    mediaUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80",
-    mediaType: "image",
-    aspectRatio: "aspect-[2/3]",
-    caption: "Yosemite valley mist rising at dawn #outdoors #wanderlust",
-    author: {
-      username: "richard_w",
-      profilePicture: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-    },
-    likes: ["1", "2", "3", "4", "5", "6", "7", "8"],
-    comments: [{}, {}],
-  },
-  {
-    _id: "seed-5",
-    mediaUrl: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&auto=format&fit=crop&q=80",
-    mediaType: "image",
-    aspectRatio: "aspect-[4/5]",
-    caption: "Urban street aesthetics and neon reflections #cityvibes",
-    author: {
-      username: "tokyo_drifter",
-      profilePicture: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=150&auto=format&fit=crop&q=80",
-    },
-    likes: ["1", "2", "3", "4", "5"],
-    comments: [{}],
-  },
-  {
-    _id: "seed-6",
-    mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    mediaType: "video",
-    aspectRatio: "aspect-[4/5]",
-    caption: "Scenic drive along the Pacific coast highway #ocean #travel",
-    author: {
-      username: "emma_obrien",
-      profilePicture: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
-    },
-    likes: ["1", "2", "3", "4", "5", "6"],
-    comments: [{}, {}, {}, {}],
-  },
-  {
-    _id: "seed-7",
-    mediaUrl: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&auto=format&fit=crop&q=80",
-    mediaType: "image",
-    aspectRatio: "aspect-[3/4]",
-    caption: "Dense emerald forest covered in morning fog #solitude",
-    author: {
-      username: "woodland_wander",
-      profilePicture: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    },
-    likes: ["1", "2", "3"],
-    comments: [],
-  },
-  {
-    _id: "seed-8",
-    mediaUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80",
-    mediaType: "image",
-    aspectRatio: "aspect-square",
-    caption: "Modern minimalist architectural villa design #interior #design",
-    author: {
-      username: "arch_digest",
-      profilePicture: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-    },
-    likes: ["1", "2", "3", "4", "5", "6", "7"],
-    comments: [{}],
-  },
-  {
-    _id: "seed-9",
-    mediaUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80",
-    mediaType: "image",
-    aspectRatio: "aspect-[2/3]",
-    caption: "Tropical turquoise waters and white sand beach #summer #paradise",
-    author: {
-      username: "beach_days",
-      profilePicture: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-    },
-    likes: ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
-    comments: [{}, {}],
-  },
-];
-
 const aspectRatios = [
   "aspect-[3/4]",
   "aspect-[4/5]",
@@ -228,8 +107,8 @@ const Gallery = () => {
       }
     });
 
-    // Merge real pins first, then append seed pins to provide a rich Pinterest masonry experience
-    return [...extractedPins, ...seedGalleryPins];
+    // Return only real pins from posts
+    return extractedPins;
   }, [posts, isAdmin]);
 
   // Filter items
@@ -250,40 +129,6 @@ const Gallery = () => {
           ...basePost,
           initialSlide: pin.mediaIndex ?? 0,
           showOriginalByDefault: Boolean(pin.isOriginalPhoto),
-        })
-      );
-      setOpenCommentDialog(true);
-    } else {
-      // For seed pins, generate standard post shape for CommentDialog
-      dispatch(
-        setSelectedPost({
-          _id: pin._id,
-          image: pin.mediaUrl,
-          mediaUrl: pin.mediaUrl,
-          mediaType: pin.mediaType,
-          media: [
-            {
-              url: pin.mediaUrl,
-              mediaType: pin.mediaType || "image",
-            },
-          ],
-          caption: pin.caption,
-          author: pin.author,
-          likes: pin.likes || [],
-          comments:
-            pin.comments && pin.comments.length > 0
-              ? pin.comments
-              : [
-                  {
-                    _id: "c1",
-                    text: "Amazing visual! Love this aesthetic ✨",
-                    author: {
-                      username: "yuki_tanaka",
-                      profilePicture:
-                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-                    },
-                  },
-                ],
         })
       );
       setOpenCommentDialog(true);
@@ -366,122 +211,128 @@ const Gallery = () => {
 
       {/* Pinterest-Style Masonry Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-        <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 [column-fill:_balance]">
-          {filteredPins.map((pin) => {
-            const isSaved = savedPins.has(pin._id);
+        {filteredPins.length === 0 ? (
+          <div className="py-24 text-center">
+            <p className="text-neutral-500 text-sm font-medium">No posts or media found in gallery.</p>
+          </div>
+        ) : (
+          <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 [column-fill:_balance]">
+            {filteredPins.map((pin) => {
+              const isSaved = savedPins.has(pin._id);
 
-            return (
-              <div
-                key={pin._id}
-                onClick={() => handlePinClick(pin)}
-                className="break-inside-avoid mb-4 group relative rounded-2xl overflow-hidden bg-neutral-200 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer select-none"
-              >
-                {/* Media Item */}
-                <div className={`w-full ${pin.aspectRatio || "aspect-auto"} overflow-hidden bg-neutral-900`}>
-                  {pin.mediaType === "video" ? (
-                    <video
-                      src={pin.mediaUrl}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      muted
-                      loop
-                      playsInline
-                      onMouseEnter={(e) => {
-                        e.currentTarget.play().catch(() => {});
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.pause();
-                        e.currentTarget.currentTime = 0;
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src={pin.mediaUrl}
-                      alt={pin.caption || "Pin"}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+              return (
+                <div
+                  key={pin._id}
+                  onClick={() => handlePinClick(pin)}
+                  className="break-inside-avoid mb-4 group relative rounded-2xl overflow-hidden bg-neutral-200 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer select-none"
+                >
+                  {/* Media Item */}
+                  <div className={`w-full ${pin.aspectRatio || "aspect-auto"} overflow-hidden bg-neutral-900`}>
+                    {pin.mediaType === "video" ? (
+                      <video
+                        src={pin.mediaUrl}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        muted
+                        loop
+                        playsInline
+                        onMouseEnter={(e) => {
+                          e.currentTarget.play().catch(() => {});
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.pause();
+                          e.currentTarget.currentTime = 0;
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={pin.mediaUrl}
+                        alt={pin.caption || "Pin"}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    )}
+                  </div>
+
+                  {/* Video Badge (Top Left) */}
+                  {pin.mediaType === "video" && (
+                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded-full text-[10px] font-medium flex items-center gap-1 z-10">
+                      <Film className="w-3 h-3 text-sky-400" />
+                      <span>Video</span>
+                    </div>
                   )}
-                </div>
 
-                {/* Video Badge (Top Left) */}
-                {pin.mediaType === "video" && (
-                  <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white px-2 py-1 rounded-full text-[10px] font-medium flex items-center gap-1 z-10">
-                    <Film className="w-3 h-3 text-sky-400" />
-                    <span>Video</span>
-                  </div>
-                )}
+                  {/* Admin Original Badge (Top Left) */}
+                  {pin.isOriginalPhoto && (
+                    <div className="absolute top-3 left-3 bg-purple-700/85 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1 z-10 shadow">
+                      <span>📷</span>
+                      <span>Original Photo</span>
+                    </div>
+                  )}
 
-                {/* Admin Original Badge (Top Left) */}
-                {pin.isOriginalPhoto && (
-                  <div className="absolute top-3 left-3 bg-purple-700/85 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1 z-10 shadow">
-                    <span>📷</span>
-                    <span>Original Photo</span>
-                  </div>
-                )}
+                  {/* Hover Overlay with Pinterest-style Save Button & Author Details */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-3.5 z-10">
+                    {/* Top: Admin Delete Button & Save Button */}
+                    <div className="flex items-center justify-between">
+                      {isAdmin && pin.originalPost?._id ? (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeletePin(e, pin.originalPost._id)}
+                          className="p-1.5 rounded-full bg-red-600/90 hover:bg-red-700 text-white transition-all shadow-md cursor-pointer hover:scale-105"
+                          title="Delete Post (Admin)"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      ) : (
+                        <div />
+                      )}
 
-                {/* Hover Overlay with Pinterest-style Save Button & Author Details */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-3.5 z-10">
-                  {/* Top: Admin Delete Button & Save Button */}
-                  <div className="flex items-center justify-between">
-                    {isAdmin && pin.originalPost?._id ? (
                       <button
                         type="button"
-                        onClick={(e) => handleDeletePin(e, pin.originalPost._id)}
-                        className="p-1.5 rounded-full bg-red-600/90 hover:bg-red-700 text-white transition-all shadow-md cursor-pointer hover:scale-105"
-                        title="Delete Post (Admin)"
+                        onClick={(e) => handleSavePin(e, pin._id)}
+                        className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer ${
+                          isSaved
+                            ? "bg-black text-white"
+                            : "bg-[#E60023] hover:bg-[#ad081b] text-white active:scale-95"
+                        }`}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "fill-white" : ""}`} />
+                        <span>{isSaved ? "Saved" : "Save"}</span>
                       </button>
-                    ) : (
-                      <div />
-                    )}
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => handleSavePin(e, pin._id)}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer ${
-                        isSaved
-                          ? "bg-black text-white"
-                          : "bg-[#E60023] hover:bg-[#ad081b] text-white active:scale-95"
-                      }`}
-                    >
-                      <Bookmark className={`w-3.5 h-3.5 ${isSaved ? "fill-white" : ""}`} />
-                      <span>{isSaved ? "Saved" : "Save"}</span>
-                    </button>
-                  </div>
+                    {/* Bottom: Author info, Caption & Likes */}
+                    <div className="space-y-1.5">
+                      {pin.caption && (
+                        <p className="text-white text-xs font-medium line-clamp-2 leading-tight drop-shadow-sm">
+                          {pin.caption}
+                        </p>
+                      )}
 
-                  {/* Bottom: Author info, Caption & Likes */}
-                  <div className="space-y-1.5">
-                    {pin.caption && (
-                      <p className="text-white text-xs font-medium line-clamp-2 leading-tight drop-shadow-sm">
-                        {pin.caption}
-                      </p>
-                    )}
+                      <div className="flex items-center justify-between pt-1">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Avatar className="w-6 h-6 border border-white/40 shrink-0">
+                            <AvatarImage src={pin.author?.profilePicture} />
+                            <AvatarFallback className="text-[9px] font-bold">
+                              {pin.author?.username?.slice(0, 2).toUpperCase() || "CN"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-white text-xs font-medium truncate drop-shadow-sm">
+                            {pin.author?.username || "creator"}
+                          </span>
+                        </div>
 
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Avatar className="w-6 h-6 border border-white/40 shrink-0">
-                          <AvatarImage src={pin.author?.profilePicture} />
-                          <AvatarFallback className="text-[9px] font-bold">
-                            {pin.author?.username?.slice(0, 2).toUpperCase() || "CN"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-white text-xs font-medium truncate drop-shadow-sm">
-                          {pin.author?.username || "creator"}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1 text-white/90 text-xs shrink-0">
-                        <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
-                        <span>{pin.likes?.length || 0}</span>
+                        <div className="flex items-center gap-1 text-white/90 text-xs shrink-0">
+                          <Heart className="w-3.5 h-3.5 fill-red-500 text-red-500" />
+                          <span>{pin.likes?.length || 0}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Post Details / Comment Dialog Modal */}

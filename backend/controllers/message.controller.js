@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
+import User from "../models/user.model.js";
 import { getReceiverSocketId, io } from "../socket/socket.js";
 
 // Send Message Controller
@@ -68,6 +69,19 @@ export const sendMessage = async (req, res) => {
         const receiverSocketId = getReceiverSocketId(receiverId);
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("newMessage", newMessage);
+            try {
+                const sender = await User.findById(senderId).select("username profilePicture");
+                io.to(receiverSocketId).emit("notification", {
+                    type: "message",
+                    userId: senderId,
+                    userDetails: sender,
+                    messageText: trimmedContent,
+                    message: `sent you a message: "${trimmedContent.length > 50 ? trimmedContent.slice(0, 50) + '...' : trimmedContent}"`,
+                    createdAt: new Date().toISOString()
+                });
+            } catch (notifErr) {
+                console.error("Error emitting message notification:", notifErr);
+            }
         }
 
         return res.status(201).json({
