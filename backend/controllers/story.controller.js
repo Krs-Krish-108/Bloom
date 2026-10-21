@@ -47,6 +47,11 @@ export const addNewStory = async (req, res) => {
             isVideo = true;
         }
 
+        if (isVideo) {
+            // Rule: Stories music applies ONLY to photos, NEVER to videos!
+            parsedMusic = null;
+        }
+
         let finalMediaUrl = "";
         let finalOriginalUrl = "";
         let finalPublicId = publicId || "";
@@ -185,7 +190,7 @@ export const addNewStory = async (req, res) => {
             style: isVideo ? "" : (style || "").toLowerCase(),
             mediaType: isVideo ? "video" : "image",
             publicId: finalPublicId || "story_" + Date.now(),
-            music: parsedMusic ? {
+            music: parsedMusic && parsedMusic.previewUrl ? {
                 trackName: parsedMusic.trackName || "",
                 artistName: parsedMusic.artistName || "",
                 previewUrl: parsedMusic.previewUrl || "",

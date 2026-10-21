@@ -158,7 +158,7 @@ export const addnewPost = async (req, res) => {
             style: style || uploadedMedia[0]?.style || "",
             cropRatio: cropRatio || "1:1",
             author: authorId,
-            music: parsedMusic ? {
+            music: parsedMusic && parsedMusic.previewUrl ? {
                 trackName: parsedMusic.trackName || "",
                 artistName: parsedMusic.artistName || "",
                 previewUrl: parsedMusic.previewUrl || "",

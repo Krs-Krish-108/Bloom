@@ -315,7 +315,7 @@ function StoryViewerModal({
   const [currentIndex, setCurrentIndex] = React.useState(initialIndex);
   const [progress, setProgress] = React.useState(0);
   const [isPaused, setIsPaused] = React.useState(false);
-  const [isMuted, setIsMuted] = React.useState(true);
+  const [isMuted, setIsMuted] = React.useState(false);
   const [showOriginal, setShowOriginal] = React.useState(false);
   const [duration, setDuration] = React.useState(DEFAULT_IMAGE_DURATION);
   const [localViewedIndices, setLocalViewedIndices] = React.useState(() => viewedIndices);
@@ -337,18 +337,24 @@ function StoryViewerModal({
 
   const currentStory = stories[currentIndex];
 
-  // Handle background story music preview
+  // Handle background story music preview (Photos only; user rule: no music on video stories)
   React.useEffect(() => {
     const audio = storyAudioRef.current;
-    const musicUrl = currentStory?.music?.previewUrl;
+    const isImageStory = currentStory?.type === "image" || !currentStory?.type;
+    const musicUrl = isImageStory ? currentStory?.music?.previewUrl : null;
 
     if (musicUrl && !isPaused && !isMuted) {
       if (audio.src !== musicUrl) {
         audio.src = musicUrl;
       }
       audio.loop = true;
-      audio.muted = isMuted;
-      audio.play().catch(() => {});
+      audio.muted = false;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((err) => {
+          console.warn("Story audio play error:", err);
+        });
+      }
     } else {
       audio.pause();
     }
@@ -647,10 +653,10 @@ function StoryViewerModal({
                 )}
               </button>
 
-              {currentStory?.type === "video" && (
+              {(currentStory?.type === "video" || currentStory?.music?.previewUrl) && (
                 <button
                   type="button"
-                  className="h-8 w-8 inline-flex items-center justify-center rounded-full text-white hover:bg-white/20 transition-colors"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full text-white hover:bg-white/20 transition-colors cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsMuted((prev) => !prev);
@@ -658,9 +664,9 @@ function StoryViewerModal({
                   aria-label={isMuted ? "Unmute" : "Mute"}
                 >
                   {isMuted ? (
-                    <VolumeX className="w-4 h-4" />
+                    <VolumeX className="w-4 h-4 text-white" />
                   ) : (
-                    <Volume2 className="w-4 h-4" />
+                    <Volume2 className="w-4 h-4 text-white" />
                   )}
                 </button>
               )}

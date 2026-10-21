@@ -9,7 +9,7 @@ export const FeedAudioProvider = ({ children }) => {
   const [isMuted, setIsMuted] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
 
-  // Map of registered posts: postId -> { elementRef, music, isVideoPlaying }
+  // Map of registered posts: postId -> { element, music }
   const registeredPostsRef = useRef(new Map());
   const audioRef = useRef(new Audio());
   const rafIdRef = useRef(null);
@@ -51,6 +51,11 @@ export const FeedAudioProvider = ({ children }) => {
   useEffect(() => {
     const unlockAudio = () => {
       setUserInteracted(true);
+      // If there's an active track that was paused due to autoplay policy, try playing it now
+      const audio = audioRef.current;
+      if (audio.src && audio.paused && !isMuted && activeTrack?.previewUrl) {
+        audio.play().catch(() => {});
+      }
       window.removeEventListener("click", unlockAudio);
       window.removeEventListener("touchstart", unlockAudio);
       window.removeEventListener("keydown", unlockAudio);
@@ -65,13 +70,88 @@ export const FeedAudioProvider = ({ children }) => {
       window.removeEventListener("touchstart", unlockAudio);
       window.removeEventListener("keydown", unlockAudio);
     };
-  }, []);
+  }, [isMuted, activeTrack]);
+
+  // Viewport Midline Scroll Evaluation
+  // Evaluates which post crosses the horizontal center line of the screen (or closest in viewport)
+  const checkMidlinePost = useCallback(() => {
+    const midlineY = window.innerHeight / 2;
+    let foundPostId = null;
+    let foundMusic = null;
+    let minDistance = Infinity;
+
+    for (const [postId, data] of registeredPostsRef.current.entries()) {
+      const el = data.element;
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+
+      // Check if this post spans across the horizontal center line
+      if (rect.top <= midlineY && rect.bottom >= midlineY) {
+        foundPostId = postId;
+        foundMusic = data.music;
+        minDistance = 0;
+        break;
+      }
+
+      // Proximity fallback: Find the post closest to the midline within the viewport
+      if (rect.bottom > 0 && rect.top < window.innerHeight) {
+        const postCenterY = (rect.top + rect.bottom) / 2;
+        const dist = Math.abs(postCenterY - midlineY);
+        if (dist < minDistance) {
+          minDistance = dist;
+          foundPostId = postId;
+          foundMusic = data.music;
+        }
+      }
+    }
+
+    if (foundPostId !== activePostId) {
+      setActivePostId(foundPostId);
+      const audio = audioRef.current;
+
+      if (foundMusic && foundMusic.previewUrl) {
+        setActiveTrack(foundMusic);
+        const isVideoActive = videoPlayingRef.current.has(foundPostId);
+
+        if (!isVideoActive) {
+          if (audio.src !== foundMusic.previewUrl) {
+            audio.src = foundMusic.previewUrl;
+          }
+          audio.currentTime = 0;
+          audio.muted = isMuted;
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((err) => {
+              console.warn("Feed audio autoplay prevented by browser:", err.message);
+            });
+          }
+        } else {
+          audio.pause();
+        }
+      } else {
+        // Post has NO music attached: pause any currently playing audio
+        setActiveTrack(null);
+        audio.pause();
+      }
+    }
+  }, [activePostId, isMuted]);
+
+  // Schedule midline check with requestAnimationFrame
+  const scheduleMidlineCheck = useCallback(() => {
+    if (rafIdRef.current) return;
+    rafIdRef.current = requestAnimationFrame(() => {
+      checkMidlinePost();
+      rafIdRef.current = null;
+    });
+  }, [checkMidlinePost]);
 
   // Register a post element for scroll monitoring
   const registerPost = useCallback((postId, element, music) => {
     if (!postId || !element) return;
     registeredPostsRef.current.set(postId, { element, music });
-  }, []);
+    // Immediately check if this newly registered post should be active
+    scheduleMidlineCheck();
+  }, [scheduleMidlineCheck]);
 
   const unregisterPost = useCallback((postId) => {
     if (!postId) return;
@@ -98,61 +178,32 @@ export const FeedAudioProvider = ({ children }) => {
     }
   }, [activePostId, activeTrack, isMuted]);
 
-  // Viewport Midline Scroll Evaluation
-  // Evaluates which post crosses the horizontal center line of the screen
-  const checkMidlinePost = useCallback(() => {
-    const midlineY = window.innerHeight / 2;
-    let foundPostId = null;
-    let foundMusic = null;
+  // Direct play trigger (e.g. user taps speaker button or music badge)
+  const playPostMusic = useCallback((postId, music) => {
+    if (!postId || !music?.previewUrl) return;
 
-    for (const [postId, data] of registeredPostsRef.current.entries()) {
-      const el = data.element;
-      if (!el) continue;
-      const rect = el.getBoundingClientRect();
+    setActivePostId(postId);
+    setActiveTrack(music);
+    setIsMuted(false);
 
-      // Check if this post spans across the horizontal center line
-      if (rect.top <= midlineY && rect.bottom >= midlineY) {
-        foundPostId = postId;
-        foundMusic = data.music;
-        break;
-      }
+    const audio = audioRef.current;
+    if (audio.src !== music.previewUrl) {
+      audio.src = music.previewUrl;
+      audio.currentTime = 0;
     }
-
-    if (foundPostId !== activePostId) {
-      setActivePostId(foundPostId);
-      const audio = audioRef.current;
-
-      if (foundMusic && foundMusic.previewUrl) {
-        setActiveTrack(foundMusic);
-        const isVideoActive = videoPlayingRef.current.has(foundPostId);
-
-        if (!isVideoActive) {
-          if (audio.src !== foundMusic.previewUrl) {
-            audio.src = foundMusic.previewUrl;
-          }
-          audio.currentTime = 0;
-          audio.play().catch(() => {
-            // Autoplay blocked by browser until user interaction
-          });
-        } else {
-          audio.pause();
-        }
-      } else {
-        // Post has NO music attached: pause any currently playing audio
-        setActiveTrack(null);
-        audio.pause();
-      }
+    audio.muted = false;
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn("Direct play failed:", err);
+      });
     }
-  }, [activePostId]);
+  }, []);
 
   // Listen to window scroll & resize events
   useEffect(() => {
     const handleScroll = () => {
-      if (rafIdRef.current) return;
-      rafIdRef.current = requestAnimationFrame(() => {
-        checkMidlinePost();
-        rafIdRef.current = null;
-      });
+      scheduleMidlineCheck();
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -166,13 +217,15 @@ export const FeedAudioProvider = ({ children }) => {
       window.removeEventListener("resize", handleScroll);
       if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
     };
-  }, [checkMidlinePost]);
+  }, [scheduleMidlineCheck]);
 
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
       const next = !prev;
+      const audio = audioRef.current;
+      audio.muted = next;
       if (!next && activeTrack?.previewUrl && !videoPlayingRef.current.has(activePostId)) {
-        audioRef.current.play().catch(() => {});
+        audio.play().catch(() => {});
       }
       return next;
     });
@@ -186,6 +239,7 @@ export const FeedAudioProvider = ({ children }) => {
         isPlaying,
         isMuted,
         toggleMute,
+        playPostMusic,
         registerPost,
         unregisterPost,
         setVideoPlaying,

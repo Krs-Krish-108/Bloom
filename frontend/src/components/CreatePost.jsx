@@ -365,8 +365,13 @@ const CreatePost = ({ open, setOpen }) => {
 
       formData.append("mediaDetails", JSON.stringify(mediaDetails));
 
-      if (selectedMusic) {
-        formData.append("music", JSON.stringify(selectedMusic));
+      if (selectedMusic && selectedMusic.previewUrl) {
+        formData.append("music", JSON.stringify({
+          trackName: selectedMusic.trackName || "",
+          artistName: selectedMusic.artistName || "",
+          previewUrl: selectedMusic.previewUrl || "",
+          artworkUrl: selectedMusic.artworkUrl || ""
+        }));
       }
 
       // Append video files so backend can upload them

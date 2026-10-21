@@ -186,6 +186,10 @@ const Stories = () => {
         file.name.endsWith(".mov") ||
         file.name.endsWith(".webm");
       setMediaType(isVideo ? "video" : "image");
+      if (isVideo) {
+        // Music only attaches to photos, not videos
+        setSelectedMusic(null);
+      }
       const url = URL.createObjectURL(file);
       setPreviewMedia(url);
       setOriginalPreview(url);
@@ -254,8 +258,13 @@ const Stories = () => {
       formData.append("style", selectedStyle);
       formData.append("styledUrl", styledUrl);
       formData.append("originalUrl", tempOriginalUrl || originalPreview);
-      if (selectedMusic) {
-        formData.append("music", JSON.stringify(selectedMusic));
+      if (selectedMusic && mediaType === "image" && selectedMusic.previewUrl) {
+        formData.append("music", JSON.stringify({
+          trackName: selectedMusic.trackName || "",
+          artistName: selectedMusic.artistName || "",
+          previewUrl: selectedMusic.previewUrl || "",
+          artworkUrl: selectedMusic.artworkUrl || ""
+        }));
       }
 
       const res = await axios.post(`${STORY_API_END_POINT}/add`, formData, {
@@ -568,8 +577,8 @@ const Stories = () => {
               </div>
             )}
 
-            {/* Add Music option to Story */}
-            {previewMedia && (
+            {/* Add Music option to Story - PHOTOS ONLY (Music attaches to photo stories, never video stories) */}
+            {previewMedia && mediaType === "image" && (
               <div className="w-full mt-3 p-3 rounded-xl border border-neutral-200 bg-neutral-50/70 flex items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <div className="w-8 h-8 rounded-lg bg-rose-50 border border-rose-200/60 flex items-center justify-center text-rose-600 shrink-0">

@@ -55,6 +55,7 @@ const Post = ({ post }) => {
     isPlaying,
     isMuted,
     toggleMute,
+    playPostMusic,
     registerPost,
     unregisterPost,
     setVideoPlaying,
@@ -287,7 +288,18 @@ const Post = ({ post }) => {
             )}
             {/* Instagram Music Badge */}
             {post?.music?.trackName && (
-              <div className="flex items-center gap-1.5 text-[11px] text-neutral-600 font-medium mt-0.5 truncate max-w-[260px]">
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (activePostId === post._id) {
+                    toggleMute?.();
+                  } else {
+                    playPostMusic?.(post._id, post.music);
+                  }
+                }}
+                className="flex items-center gap-1.5 text-[11px] text-neutral-600 font-medium mt-0.5 truncate max-w-[260px] cursor-pointer hover:text-black transition-colors"
+                title="Click to play / mute audio"
+              >
                 <Music className="w-3 h-3 text-rose-500 shrink-0" />
                 <span className="truncate">
                   {post.music.trackName} • {post.music.artistName}
@@ -406,16 +418,20 @@ const Post = ({ post }) => {
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              toggleMute?.();
+              if (activePostId === post._id) {
+                toggleMute?.();
+              } else {
+                playPostMusic?.(post._id, post.music);
+              }
             }}
-            className="absolute bottom-3 right-3 w-7 h-7 rounded-full bg-black/65 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/85 transition-colors z-20 shadow cursor-pointer"
-            title={isMuted ? "Unmute post music" : "Mute post music"}
-            aria-label={isMuted ? "Unmute post music" : "Mute post music"}
+            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/65 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/85 transition-transform active:scale-90 z-20 shadow cursor-pointer"
+            title={activePostId === post._id && !isMuted ? "Mute post music" : "Play post music"}
+            aria-label={activePostId === post._id && !isMuted ? "Mute post music" : "Play post music"}
           >
-            {isMuted ? (
-              <VolumeX className="w-3.5 h-3.5" />
+            {activePostId === post._id && !isMuted && isPlaying ? (
+              <Volume2 className="w-4 h-4 text-white" />
             ) : (
-              <Volume2 className="w-3.5 h-3.5" />
+              <VolumeX className="w-4 h-4 text-white/90" />
             )}
           </button>
         )}
