@@ -12,6 +12,9 @@ import {
   Smile,
   X,
   Sparkles,
+  Music,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import CommentDialog from "./CommentDialog";
@@ -22,6 +25,7 @@ import { POST_API_END_POINT } from "@/utils/constants";
 import { setPosts, setSelectedPost, updatePostLikes } from "@/redux/postSlice";
 import { setAuthUser } from "@/redux/authSlice";
 import { Link } from "react-router-dom";
+import { useFeedAudio } from "@/context/FeedAudioContext";
 
 // Curated list of ~60 smileys, hearts, and stars
 const CURATED_EMOJIS = [
@@ -37,6 +41,7 @@ const CURATED_EMOJIS = [
 ];
 
 const Post = ({ post }) => {
+  const postRef = useRef(null);
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -45,6 +50,27 @@ const Post = ({ post }) => {
   const dispatch = useDispatch();
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
+  const {
+    activePostId,
+    isPlaying,
+    isMuted,
+    toggleMute,
+    registerPost,
+    unregisterPost,
+    setVideoPlaying,
+  } = useFeedAudio();
+
+  // Register this post element for horizontal midline viewport scroll detection
+  useEffect(() => {
+    if (postRef.current && post?._id && registerPost) {
+      registerPost(post._id, postRef.current, post.music || null);
+    }
+    return () => {
+      if (post?._id && unregisterPost) {
+        unregisterPost(post._id);
+      }
+    };
+  }, [post?._id, post?.music, registerPost, unregisterPost]);
 
   const isLiked = Boolean(
     post?.likes?.some(
@@ -228,11 +254,11 @@ const Post = ({ post }) => {
   };
 
   return (
-    <div className="mb-4 w-full max-w-[470px] mx-auto bg-white border-b border-neutral-200/80 pb-4">
+    <div ref={postRef} className="mb-4 w-full max-w-[470px] mx-auto bg-white border-b border-neutral-200/80 pb-4">
       {/* Post Header: Avatar, Username, 3-dots Menu */}
       <div className="flex items-center justify-between py-2 px-0.5">
-        <div className="flex items-center gap-2">
-          <Link to={`/profile/${authorId}`}>
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <Link to={`/profile/${authorId}`} className="shrink-0">
             <Avatar className="w-8 h-8">
               <AvatarImage src={authorAvatar} alt="author_avatar" />
               <AvatarFallback>
@@ -240,16 +266,16 @@ const Post = ({ post }) => {
               </AvatarFallback>
             </Avatar>
           </Link>
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <Link
                 to={`/profile/${authorId}`}
-                className="font-semibold text-sm hover:underline leading-tight"
+                className="font-semibold text-sm hover:underline leading-tight truncate"
               >
                 {authorUsername}
               </Link>
               {post?.style && (
-                <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200/70 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-[10px] bg-purple-50 text-purple-700 border border-purple-200/70 px-2 py-0.5 rounded-full font-medium shrink-0">
                   {post.style}
                 </span>
               )}
@@ -258,6 +284,22 @@ const Post = ({ post }) => {
               <span className="text-[11px] text-gray-500 font-normal flex items-center gap-1 mt-0.5">
                 <span className="text-[10px]">✨</span> AI info
               </span>
+            )}
+            {/* Instagram Music Badge */}
+            {post?.music?.trackName && (
+              <div className="flex items-center gap-1.5 text-[11px] text-neutral-600 font-medium mt-0.5 truncate max-w-[260px]">
+                <Music className="w-3 h-3 text-rose-500 shrink-0" />
+                <span className="truncate">
+                  {post.music.trackName} • {post.music.artistName}
+                </span>
+                {activePostId === post._id && isPlaying && !isMuted && (
+                  <div className="flex items-end gap-0.5 h-2.5 ml-0.5 shrink-0">
+                    <span className="w-0.5 h-2 bg-rose-500 animate-pulse" />
+                    <span className="w-0.5 h-1 bg-rose-500 animate-pulse delay-75" />
+                    <span className="w-0.5 h-2.5 bg-rose-500 animate-pulse delay-150" />
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -340,6 +382,9 @@ const Post = ({ post }) => {
             controls
             playsInline
             loop
+            onPlay={() => setVideoPlaying?.(post._id, true)}
+            onPause={() => setVideoPlaying?.(post._id, false)}
+            onEnded={() => setVideoPlaying?.(post._id, false)}
           />
         ) : (
           <img
@@ -353,6 +398,26 @@ const Post = ({ post }) => {
             }
             alt="post_media"
           />
+        )}
+
+        {/* Audio Mute / Unmute Toggle Button for Post Music */}
+        {post?.music?.previewUrl && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMute?.();
+            }}
+            className="absolute bottom-3 right-3 w-7 h-7 rounded-full bg-black/65 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/85 transition-colors z-20 shadow cursor-pointer"
+            title={isMuted ? "Unmute post music" : "Mute post music"}
+            aria-label={isMuted ? "Unmute post music" : "Mute post music"}
+          >
+            {isMuted ? (
+              <VolumeX className="w-3.5 h-3.5" />
+            ) : (
+              <Volume2 className="w-3.5 h-3.5" />
+            )}
+          </button>
         )}
 
         {/* Admin Original Photo Indicator Badge */}

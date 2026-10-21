@@ -66,6 +66,12 @@ const postSchema = new mongoose.Schema({
     cropRatio: {
         type: String,
         default: "1:1"
+    },
+    music: {
+        trackName: { type: String, default: "" },
+        artistName: { type: String, default: "" },
+        previewUrl: { type: String, default: "" },
+        artworkUrl: { type: String, default: "" }
     }
 }, { timestamps: true });
 

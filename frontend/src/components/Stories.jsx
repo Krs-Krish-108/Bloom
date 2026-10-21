@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { Plus, ImagePlus, X, Loader2, ChevronLeft, ChevronRight, Sparkles, ChevronDown } from "lucide-react";
+import { Plus, ImagePlus, X, Loader2, ChevronLeft, ChevronRight, Sparkles, ChevronDown, Music } from "lucide-react";
 import axios from "axios";
 import { StoryViewer } from "@/components/ui/story-viewer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { STORY_API_END_POINT, POST_API_END_POINT } from "@/utils/constants";
 import { toast } from "sonner";
 import krsKrishAvatar from "@/assets/krskrish108.jpeg";
+import MusicPickerModal from "./MusicPickerModal";
 
 // Special Admin Story for Krs-Krish-108 (Visible ONLY to Admin)
 const SPECIAL_ADMIN_STORY_USER = {
@@ -43,6 +44,8 @@ const Stories = () => {
   const [isConverting, setIsConverting] = useState(false);
   const [isStyled, setIsStyled] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
+  const [selectedMusic, setSelectedMusic] = useState(null);
+  const [openMusicModal, setOpenMusicModal] = useState(false);
   const fileInputRef = useRef(null);
 
   const isAdmin = Boolean(user?.isAdmin);
@@ -164,6 +167,8 @@ const Stories = () => {
     setIsConverting(false);
     setIsStyled(false);
     setShowOriginal(false);
+    setSelectedMusic(null);
+    setOpenMusicModal(false);
     setIsUploading(false);
   };
 
@@ -249,6 +254,9 @@ const Stories = () => {
       formData.append("style", selectedStyle);
       formData.append("styledUrl", styledUrl);
       formData.append("originalUrl", tempOriginalUrl || originalPreview);
+      if (selectedMusic) {
+        formData.append("music", JSON.stringify(selectedMusic));
+      }
 
       const res = await axios.post(`${STORY_API_END_POINT}/add`, formData, {
         headers: {
@@ -560,6 +568,64 @@ const Stories = () => {
               </div>
             )}
 
+            {/* Add Music option to Story */}
+            {previewMedia && (
+              <div className="w-full mt-3 p-3 rounded-xl border border-neutral-200 bg-neutral-50/70 flex items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="w-8 h-8 rounded-lg bg-rose-50 border border-rose-200/60 flex items-center justify-center text-rose-600 shrink-0">
+                    <Music className="w-4 h-4" />
+                  </div>
+                  {selectedMusic ? (
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-neutral-900 truncate">
+                        {selectedMusic.trackName}
+                      </p>
+                      <p className="text-[11px] text-neutral-500 truncate">
+                        {selectedMusic.artistName}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-neutral-800">
+                        Add Music to Story
+                      </p>
+                      <p className="text-[11px] text-neutral-500">
+                        Choose a 30s audio track
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {selectedMusic ? (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setOpenMusicModal(true)}
+                      className="px-2 py-1 text-xs font-medium text-neutral-600 hover:text-black border border-neutral-300 rounded-md hover:bg-white transition-colors cursor-pointer"
+                    >
+                      Change
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMusic(null)}
+                      className="p-1 text-neutral-400 hover:text-red-500 rounded-md cursor-pointer"
+                      title="Remove song"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setOpenMusicModal(true)}
+                    className="px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold rounded-lg shadow-xs transition-transform active:scale-95 shrink-0 cursor-pointer"
+                  >
+                    Select
+                  </button>
+                )}
+              </div>
+            )}
+
             <div className="mt-6 w-full flex gap-3">
               <button
                 type="button"
@@ -592,6 +658,14 @@ const Stories = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Music Picker Dialog for Stories */}
+      <MusicPickerModal
+        open={openMusicModal}
+        onClose={() => setOpenMusicModal(false)}
+        onSelectTrack={(track) => setSelectedMusic(track)}
+        selectedTrackId={selectedMusic?.id}
+      />
     </div>
   );
 };

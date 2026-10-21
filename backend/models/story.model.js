@@ -31,6 +31,12 @@ const storySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     }],
+    music: {
+        trackName: { type: String, default: "" },
+        artistName: { type: String, default: "" },
+        previewUrl: { type: String, default: "" },
+        artworkUrl: { type: String, default: "" }
+    },
     createdAt: {
         type: Date,
         default: Date.now,

@@ -333,8 +333,45 @@ function StoryViewerModal({
   const progressIntervalRef = React.useRef(null);
   const startTimeRef = React.useRef(0);
   const elapsedRef = React.useRef(0);
+  const storyAudioRef = React.useRef(new Audio());
 
   const currentStory = stories[currentIndex];
+
+  // Handle background story music preview
+  React.useEffect(() => {
+    const audio = storyAudioRef.current;
+    const musicUrl = currentStory?.music?.previewUrl;
+
+    if (musicUrl && !isPaused && !isMuted) {
+      if (audio.src !== musicUrl) {
+        audio.src = musicUrl;
+      }
+      audio.loop = true;
+      audio.muted = isMuted;
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+
+    return () => {
+      audio.pause();
+    };
+  }, [currentStory, isPaused, isMuted]);
+
+  React.useEffect(() => {
+    if (storyAudioRef.current) {
+      storyAudioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  React.useEffect(() => {
+    return () => {
+      if (storyAudioRef.current) {
+        storyAudioRef.current.pause();
+        storyAudioRef.current.src = "";
+      }
+    };
+  }, []);
 
   const handleDeleteCurrentStory = React.useCallback(
     (e) => {
@@ -571,12 +608,22 @@ function StoryViewerModal({
               <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-neutral-800">
                 <img src={avatar} alt={username} className="w-full h-full object-cover" />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-white text-sm font-semibold">{username}</span>
-                {timestamp && (
-                  <span className="text-white/60 text-xs">
-                    • {formatTimestamp(timestamp)}
-                  </span>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <span className="text-white text-sm font-semibold">{username}</span>
+                  {timestamp && (
+                    <span className="text-white/60 text-xs">
+                      • {formatTimestamp(timestamp)}
+                    </span>
+                  )}
+                </div>
+                {currentStory?.music?.trackName && (
+                  <div className="flex items-center gap-1 text-[11px] text-white/90 font-medium">
+                    <span className="text-rose-400">🎵</span>
+                    <span className="truncate max-w-[200px]">
+                      {currentStory.music.trackName} • {currentStory.music.artistName}
+                    </span>
+                  </div>
                 )}
               </div>
             </div>

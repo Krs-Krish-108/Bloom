@@ -14,7 +14,7 @@ import {
 
 export const addnewPost = async (req, res) => {
     try {
-        const { caption, isBirthdayTag, style, cropRatio, mediaDetails } = req.body;
+        const { caption, isBirthdayTag, style, cropRatio, mediaDetails, music } = req.body;
         const authorId = req.id;
 
         const user = await User.findById(authorId);
@@ -23,6 +23,15 @@ export const addnewPost = async (req, res) => {
                 message: "User not found",
                 success: false
             });
+        }
+
+        let parsedMusic = null;
+        if (music) {
+            try {
+                parsedMusic = typeof music === "string" ? JSON.parse(music) : music;
+            } catch {
+                parsedMusic = null;
+            }
         }
 
         let uploadedMedia = [];
@@ -148,7 +157,13 @@ export const addnewPost = async (req, res) => {
             isBirthdayTag: isBirthdayTag === "true" || isBirthdayTag === true,
             style: style || uploadedMedia[0]?.style || "",
             cropRatio: cropRatio || "1:1",
-            author: authorId
+            author: authorId,
+            music: parsedMusic ? {
+                trackName: parsedMusic.trackName || "",
+                artistName: parsedMusic.artistName || "",
+                previewUrl: parsedMusic.previewUrl || "",
+                artworkUrl: parsedMusic.artworkUrl || ""
+            } : undefined
         });
 
         user.posts.push(newPost._id);

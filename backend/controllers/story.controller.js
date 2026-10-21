@@ -13,7 +13,16 @@ import {
 export const addNewStory = async (req, res) => {
     try {
         const authorId = req.id;
-        const { style, styledUrl, originalUrl, publicId } = req.body;
+        const { style, styledUrl, originalUrl, publicId, music } = req.body;
+
+        let parsedMusic = null;
+        if (music) {
+            try {
+                parsedMusic = typeof music === "string" ? JSON.parse(music) : music;
+            } catch {
+                parsedMusic = null;
+            }
+        }
 
         let file = req.file;
         if (!file && req.files) {
@@ -175,7 +184,13 @@ export const addNewStory = async (req, res) => {
             originalMediaUrl: finalOriginalUrl,
             style: isVideo ? "" : (style || "").toLowerCase(),
             mediaType: isVideo ? "video" : "image",
-            publicId: finalPublicId || "story_" + Date.now()
+            publicId: finalPublicId || "story_" + Date.now(),
+            music: parsedMusic ? {
+                trackName: parsedMusic.trackName || "",
+                artistName: parsedMusic.artistName || "",
+                previewUrl: parsedMusic.previewUrl || "",
+                artworkUrl: parsedMusic.artworkUrl || ""
+            } : undefined
         });
 
         await newStory.populate({
@@ -246,7 +261,8 @@ export const getAllStories = async (req, res) => {
                 src: story.mediaUrl, // Converted art form is shown on story
                 originalSrc: story.originalMediaUrl || story.mediaUrl, // Original photo for Admin
                 style: story.style || "",
-                createdAt: story.createdAt
+                createdAt: story.createdAt,
+                music: story.music || null
             });
         }
 

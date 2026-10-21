@@ -11,6 +11,7 @@ import userRoutes from "./routes/user.route.js";
 import postRoutes from "./routes/post.route.js";
 import messageRoutes from "./routes/message.route.js";
 import storyRoutes from "./routes/story.route.js";
+import musicRoutes from "./routes/music.route.js";
 import { app, server } from "./socket/socket.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -58,6 +59,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/post", postRoutes);
 app.use("/api/v1/message", messageRoutes);
 app.use("/api/v1/story", storyRoutes);
+app.use("/api/v1/music", musicRoutes);
 
 // Static File Serving & Wildcard Fallback (when hosted as unified app)
 const frontendDistPath = path.resolve(__dirname, "..", "frontend", "dist", "index.html");

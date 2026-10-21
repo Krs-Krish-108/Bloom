@@ -19,12 +19,14 @@ import {
   ChevronDown,
   Film,
   Sparkles,
+  Music,
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { POST_API_END_POINT } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setPosts } from "@/redux/postSlice";
+import MusicPickerModal from "./MusicPickerModal";
 
 const MAX_MEDIA_COUNT = 10;
 
@@ -64,6 +66,8 @@ const CreatePost = ({ open, setOpen }) => {
   const [selectedStyle, setSelectedStyle] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
+  const [selectedMusic, setSelectedMusic] = useState(null);
+  const [openMusicModal, setOpenMusicModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -87,6 +91,8 @@ const CreatePost = ({ open, setOpen }) => {
     setSelectedStyle("");
     setShowEmojiPicker(false);
     setShowOriginal(false);
+    setSelectedMusic(null);
+    setOpenMusicModal(false);
     setLoading(false);
     setStep("upload");
     setShowDiscardConfirm(false);
@@ -358,6 +364,10 @@ const CreatePost = ({ open, setOpen }) => {
       }));
 
       formData.append("mediaDetails", JSON.stringify(mediaDetails));
+
+      if (selectedMusic) {
+        formData.append("music", JSON.stringify(selectedMusic));
+      }
 
       // Append video files so backend can upload them
       mediaItems.forEach((item) => {
@@ -1069,6 +1079,69 @@ const CreatePost = ({ open, setOpen }) => {
                     </button>
                   </div>
 
+                  {/* Option: Add Music to Post / Entire Carousel */}
+                  <div className="p-4 py-3 border-t border-gray-100 flex items-center justify-between gap-3 hover:bg-neutral-50/60 transition-colors select-none">
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                        <Music className="w-4 h-4 text-rose-500" />
+                        <span>Add Music</span>
+                      </span>
+                      {selectedMusic ? (
+                        <div className="flex items-center gap-2 mt-1.5 bg-rose-50/80 border border-rose-200/80 rounded-lg p-1.5 pr-2 max-w-full">
+                          {selectedMusic.artworkUrl ? (
+                            <img
+                              src={selectedMusic.artworkUrl}
+                              alt=""
+                              className="w-7 h-7 rounded-md object-cover shrink-0 shadow-xs"
+                            />
+                          ) : (
+                            <div className="w-7 h-7 rounded-md bg-rose-200 flex items-center justify-center text-rose-700 shrink-0">
+                              <Music className="w-3.5 h-3.5" />
+                            </div>
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-semibold text-rose-950 truncate leading-tight">
+                              {selectedMusic.trackName}
+                            </p>
+                            <p className="text-[10px] text-rose-600 truncate mt-0.5">
+                              {selectedMusic.artistName}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedMusic(null)}
+                            className="text-rose-400 hover:text-rose-700 p-1 rounded-md hover:bg-rose-100 transition-colors cursor-pointer"
+                            title="Remove music"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-500 mt-0.5 leading-snug">
+                          One track for the entire post carousel.
+                        </p>
+                      )}
+                    </div>
+
+                    {!selectedMusic ? (
+                      <button
+                        type="button"
+                        onClick={() => setOpenMusicModal(true)}
+                        className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs transition-transform active:scale-95 shrink-0 cursor-pointer"
+                      >
+                        Select
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setOpenMusicModal(true)}
+                        className="px-2.5 py-1 rounded-lg border border-neutral-300 hover:bg-neutral-100 text-neutral-700 text-xs font-semibold transition-colors shrink-0 cursor-pointer"
+                      >
+                        Change
+                      </button>
+                    )}
+                  </div>
+
                   {/* Option 2: AI Style Conversion (One-by-One Mandatory Conversion) */}
                   <div className="p-4 pt-3 border-t border-gray-100 flex flex-col gap-2.5 bg-neutral-50/50">
                     <div className="flex items-center justify-between">
@@ -1258,6 +1331,14 @@ const CreatePost = ({ open, setOpen }) => {
           </div>
         </div>
       )}
+
+      {/* Instagram-Style Music Picker Dialog */}
+      <MusicPickerModal
+        open={openMusicModal}
+        onClose={() => setOpenMusicModal(false)}
+        onSelectTrack={(track) => setSelectedMusic(track)}
+        selectedTrackId={selectedMusic?.id}
+      />
     </div>,
     document.body
   );
