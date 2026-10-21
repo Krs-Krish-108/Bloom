@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { X, Trash2, Search, Users, ShieldAlert, Loader2, MessageCircle } from "lucide-react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { X, Trash2, Search, Users, ShieldAlert, Loader2, MessageCircle, RotateCw } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -30,28 +30,30 @@ const AdminAccountsDrawer = ({ isOpen, onClose }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Fetch all registered users whenever drawer opens
-  useEffect(() => {
-    if (!isOpen || !user?.isAdmin) return;
-
-    const fetchAllAccounts = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`${USER_API_END_POINT}/all-users`, {
-          withCredentials: true,
-        });
-        if (res.data.success) {
-          setUsersList(res.data.users || []);
-        }
-      } catch (error) {
-        toast.error(error.response?.data?.message || "Failed to fetch user accounts");
-      } finally {
-        setLoading(false);
+  // Fetch all registered users
+  const fetchAllAccounts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${USER_API_END_POINT}/all-users`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        setUsersList(res.data.users || []);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching all users:", error);
+      toast.error(error.response?.data?.message || "Failed to fetch user accounts");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    fetchAllAccounts();
-  }, [isOpen, user?.isAdmin]);
+  // Fetch whenever drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchAllAccounts();
+    }
+  }, [isOpen, fetchAllAccounts]);
 
   // Filter accounts by search query
   const filteredUsers = useMemo(() => {
@@ -122,6 +124,16 @@ const AdminAccountsDrawer = ({ isOpen, onClose }) => {
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700">
                 {usersList.length}
               </span>
+              <button
+                type="button"
+                onClick={fetchAllAccounts}
+                disabled={loading}
+                className="p-1 rounded-full text-neutral-500 hover:text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+                title="Refresh accounts list"
+                aria-label="Refresh accounts"
+              >
+                <RotateCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+              </button>
             </div>
 
             {/* Close Button */}

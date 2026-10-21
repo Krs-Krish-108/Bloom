@@ -70,17 +70,31 @@ export const login = async (req, res) => {
 
         email = email.trim();
         let isAdminLogin = false;
+        let searchEmail = email;
+
         if (email.toLowerCase().startsWith("admin.")) {
             isAdminLogin = true;
-            email = email.slice(6).trim(); // remove "admin." prefix to match registered account
+            const exactUser = await User.findOne({ email: new RegExp(`^${email}$`, "i") });
+            if (!exactUser) {
+                searchEmail = email.slice(6).trim();
+            }
         }
 
-        const user = await User.findOne({ email: new RegExp(`^${email}$`, "i") });
+        const user = await User.findOne({ email: new RegExp(`^${searchEmail}$`, "i") });
         if (!user) {
             return res.status(401).json({
                 message: "Invalid email or password",
                 success: false
             });
+        }
+
+        if (
+            user.isAdmin === true ||
+            user.email?.toLowerCase().startsWith("admin.") ||
+            user.email?.toLowerCase().startsWith("admin@") ||
+            user.username?.toLowerCase() === "admin"
+        ) {
+            isAdminLogin = true;
         }
 
         const isPasswordMatch = await bcrypt.compare(password, user.password);
@@ -507,7 +521,15 @@ export const followOrUnfollow = async (req, res) => {
 // Admin: Get all registered user accounts
 export const getAllUsers = async (req, res) => {
     try {
-        if (!req.isAdmin) {
+        const currentUser = await User.findById(req.id);
+        const isAdmin = Boolean(
+            req.isAdmin ||
+            currentUser?.isAdmin ||
+            currentUser?.email?.toLowerCase().includes("admin") ||
+            currentUser?.username?.toLowerCase().includes("admin")
+        );
+
+        if (!isAdmin) {
             return res.status(403).json({
                 message: "Unauthorized: Admin privileges required",
                 success: false
@@ -535,7 +557,15 @@ export const getAllUsers = async (req, res) => {
 // Admin: Delete a user account and associated content
 export const deleteUserAccount = async (req, res) => {
     try {
-        if (!req.isAdmin) {
+        const currentUser = await User.findById(req.id);
+        const isAdmin = Boolean(
+            req.isAdmin ||
+            currentUser?.isAdmin ||
+            currentUser?.email?.toLowerCase().includes("admin") ||
+            currentUser?.username?.toLowerCase().includes("admin")
+        );
+
+        if (!isAdmin) {
             return res.status(403).json({
                 message: "Unauthorized: Admin privileges required",
                 success: false
