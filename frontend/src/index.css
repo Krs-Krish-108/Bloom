@@ -1,6 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Grand+Hotel&family=Playball&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .font-cursive-bloom {
+    font-family: 'Grand Hotel', 'Playball', cursive;
+  }
+}
+
 @layer base {
   :root {
     --background: oklch(1 0 0);

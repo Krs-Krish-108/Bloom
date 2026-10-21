@@ -1,7 +1,7 @@
 {
-  "name": "bloom-l00m",
+  "name": "bloom",
   "version": "1.0.0",
-  "description": "Full Stack Bloom L00M Social Platform using MERN, Socket.io, and Gemini AI",
+  "description": "Full Stack Bloom Social Platform using MERN, Socket.io, and Gemini AI",
   "main": "backend/server.js",
   "type": "module",
   "scripts": {

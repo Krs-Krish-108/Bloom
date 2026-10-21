@@ -5,7 +5,7 @@ import { Terminal, X, Minus, Square } from "lucide-react";
 export const TARGET_REDIRECT_URL = "https://learningz497-pro.github.io/KBS-8-bit-game/";
 
 // Root directory prompt address
-export const TERMINAL_ROOT_PATH = "root@bloom-system:/var/www/bloom-l00m/assets/stories/krs-krish108#";
+export const TERMINAL_ROOT_PATH = "root@bloom-system:/var/www/bloom/assets/stories/krs-krish108#";
 
 // Admin authentication password (DOB: 10222005)
 export const ADMIN_AUTH_PASSWORD = "10222005";
@@ -129,7 +129,7 @@ export const INTEGRATED_TERMINAL_STEPS = [
     ],
     helpText: "Audit repaired story stream integrity before deployment.",
     output: [
-      { text: "[*] Running full integrity audit on /var/www/bloom-l00m/assets/stories/krs-krish108...", delay: 750 },
+      { text: "[*] Running full integrity audit on /var/www/bloom/assets/stories/krs-krish108...", delay: 750 },
       { text: "    [AUDIT 1/3] Frame buffer integrity: 100% HEALTHY", delay: 800 },
       { text: "    [AUDIT 2/3] Wish stream consistency: VERIFIED", delay: 850 },
       { text: "    [AUDIT 3/3] Permissions check: RESTRICTED_WRITE", delay: 800 },
@@ -241,7 +241,7 @@ const AdminTerminalModal = ({
       setHistory([
         {
           type: "system",
-          text: `Bloom Diagnostic Terminal (GNU/Linux 6.8.0-x86_64)\n[CRITICAL] Asset stream degraded: /var/www/bloom-l00m/assets/stories/krs-krish108\nError code 108: Wish descriptor corrupt in sector 0x7FFF98A2.\n\n[!] System fault detected. To inspect stream status, execute command:\n    $ status --check-stream\n(Or run diagnosis directly with: 'run_diagnosis --target=krs-krish-108')\nType 'exit' or click [Exit ✕] to return to story.`,
+          text: `Bloom Diagnostic Terminal (GNU/Linux 6.8.0-x86_64)\n[CRITICAL] Asset stream degraded: /var/www/bloom/assets/stories/krs-krish108\nError code 108: Wish descriptor corrupt in sector 0x7FFF98A2.\n\n[!] System fault detected. To inspect stream status, execute command:\n    $ status --check-stream\n(Or run diagnosis directly with: 'run_diagnosis --target=krs-krish-108')\nType 'exit' or click [Exit ✕] to return to story.`,
         },
       ]);
       setCurrentStepIndex(0);
@@ -596,7 +596,7 @@ const AdminTerminalModal = ({
           {/* Top Center Title */}
           <div className="flex items-center gap-1.5 text-neutral-400 text-xs font-semibold truncate px-2">
             <Terminal className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
-            <span className="truncate">root@bloom-system: /var/www/bloom-l00m/assets/stories/krs-krish108</span>
+            <span className="truncate">root@bloom-system: /var/www/bloom/assets/stories/krs-krish108</span>
           </div>
 
           {/* Top Right Controls: bash indicator + Prominent Close (X) button */}

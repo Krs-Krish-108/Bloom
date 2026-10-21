@@ -14,11 +14,11 @@ import bloomLogoRose from "@/assets/bloom-logo-rose.png";
  */
 const BloomLogo = ({
   variant = "dark",
-  className = "w-7 h-7 object-contain",
-  alt = "Bloom L00M Logo",
+  className = "w-9 h-9 object-contain",
+  alt = "Bloom Logo",
   showText = false,
-  textClassName = "font-bold text-xl tracking-tight text-neutral-900 font-serif",
-  text = "Bloom L00M",
+  textClassName = "font-cursive-bloom text-3xl tracking-wide text-neutral-900 leading-none select-none",
+  text = "Bloom",
   containerClassName = "flex items-center gap-2.5",
 }) => {
   let logoSrc = bloomLogoDark;

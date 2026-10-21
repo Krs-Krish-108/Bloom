@@ -1,4 +1,4 @@
-# 🪷 Bloom L00M (MERN + Socket.IO + Gemini AI)
+# 🪷 Bloom (MERN + Socket.IO + Gemini AI)
 
 A modern, full-stack social platform built with the **MERN stack** (MongoDB, Express, React, Node.js), featuring **Socket.IO real-time capabilities**, responsive mobile-first UI, and **Google Gemini AI image cartoonification**.
 

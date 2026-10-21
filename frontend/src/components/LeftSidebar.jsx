@@ -115,16 +115,16 @@ const LeftSidebar = () => {
 
   return (
     <>
-      {/* Mobile Top Header (Bloom L00M Header for Phone) */}
+      {/* Mobile Top Header (Bloom Header for Phone) */}
       {!isInActiveChat && (
         <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 backdrop-blur-md border-b border-neutral-200/80 z-40 px-4 flex items-center justify-between">
           <div
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 cursor-pointer select-none"
+            className="flex items-center gap-2.5 cursor-pointer select-none"
           >
-            <BloomLogo variant="dark" className="w-7 h-7 object-contain" />
-            <span className="font-bold text-2xl tracking-tight text-neutral-900 font-serif italic">
-              Bloom L00M
+            <BloomLogo variant="dark" className="w-8 h-8 object-contain" />
+            <span className="font-cursive-bloom text-3xl tracking-wide text-neutral-900 leading-none pt-1">
+              Bloom
             </span>
           </div>
 
@@ -184,10 +184,10 @@ const LeftSidebar = () => {
               }`}
               title="Home"
             >
-              <div className="w-8 h-8 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 flex items-center justify-center shrink-0">
                 <BloomLogo
                   variant="dark"
-                  className="w-7 h-7 object-contain group-hover:scale-105 transition-transform"
+                  className="w-8 h-8 object-contain group-hover:scale-105 transition-transform"
                 />
               </div>
 
@@ -198,8 +198,8 @@ const LeftSidebar = () => {
                     : "w-0 opacity-0 -translate-x-3 pointer-events-none"
                 }`}
               >
-                <span className="font-bold text-xl tracking-tight text-neutral-900 font-serif">
-                  Bloom L00M
+                <span className="font-cursive-bloom text-3xl tracking-wide text-neutral-900 leading-none pt-1 select-none">
+                  Bloom
                 </span>
               </div>
             </div>

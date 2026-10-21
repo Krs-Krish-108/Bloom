@@ -154,12 +154,12 @@ function SignInForm({ onToggle }) {
 
   return (
     <form onSubmit={handleSignIn} autoComplete="on" className="flex flex-col gap-6">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <BloomLogo variant="dark" className="w-11 h-11 object-contain" />
-        <h1 className="text-3xl font-bold tracking-tight text-foreground font-serif">
-          Bloom L00M
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <BloomLogo variant="dark" className="w-14 h-14 object-contain" />
+        <h1 className="font-cursive-bloom text-5xl tracking-wide text-foreground pt-1 select-none">
+          Bloom
         </h1>
-        <h2 className="text-xl font-semibold text-foreground/90 mt-0.5">
+        <h2 className="text-lg font-semibold text-foreground/90 mt-1">
           Sign in to your account
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -265,12 +265,12 @@ function SignUpForm({ onToggle }) {
 
   return (
     <form onSubmit={handleSignUp} autoComplete="on" className="flex flex-col gap-6">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <BloomLogo variant="dark" className="w-11 h-11 object-contain" />
-        <h1 className="text-3xl font-bold tracking-tight text-neutral-900 font-serif">
-          Bloom L00M
+      <div className="flex flex-col items-center gap-1.5 text-center">
+        <BloomLogo variant="dark" className="w-14 h-14 object-contain" />
+        <h1 className="font-cursive-bloom text-5xl tracking-wide text-neutral-900 pt-1 select-none">
+          Bloom
         </h1>
-        <h2 className="text-xl font-semibold text-neutral-800 mt-0.5">
+        <h2 className="text-lg font-semibold text-neutral-800 mt-1">
           Create an account
         </h2>
         <p className="text-sm text-neutral-500">
@@ -392,9 +392,9 @@ export function AuthUI({ initialMode = "signIn" }) {
         <div className="relative z-10 flex h-full flex-col justify-between p-10 text-white">
           {/* Top Brand Logo */}
           <div className="flex items-center gap-3">
-            <BloomLogo variant="white" className="w-9 h-9 object-contain drop-shadow" />
-            <span className="text-2xl font-bold tracking-tight font-serif text-white drop-shadow">
-              Bloom L00M
+            <BloomLogo variant="white" className="w-11 h-11 object-contain drop-shadow" />
+            <span className="font-cursive-bloom text-4xl tracking-wide text-white drop-shadow pt-1 select-none">
+              Bloom
             </span>
           </div>
 
@@ -415,7 +415,7 @@ export function AuthUI({ initialMode = "signIn" }) {
               </p>
             </blockquote>
             <cite className="block text-xs font-medium uppercase tracking-widest text-white/50 not-italic pt-1">
-              — Bloom L00M
+              — Bloom
             </cite>
           </div>
         </div>
