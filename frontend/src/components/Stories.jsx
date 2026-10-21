@@ -133,11 +133,11 @@ const Stories = () => {
         }
 
         const others = groups.filter((g) => g.userId !== currentUserId);
-        setOtherStories(others.length > 0 ? others : initialSeedStories);
+        setOtherStories(others);
       }
     } catch (err) {
       console.error("Failed to fetch stories from backend:", err);
-      setOtherStories(initialSeedStories);
+      setOtherStories([]);
     }
   };
 
