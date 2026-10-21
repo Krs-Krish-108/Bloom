@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment variables & secrets
+.env
+.env.*
+*.env
+!.env.example
+!*/.env.example
+test.txt
+
+# Build artifacts
+dist/
+dist-ssr/
+frontend/dist/
+
+# Transcripts and local notes in root
+Instagram clone.txt
+roadmap.txt
+
+# Root test media & raw images (while preserving frontend/backend assets)
+krskrish108.jpeg
+145a8f1b933c33434667491a5c711e7b.jpg
+sample.jpg
+sample_ghibli.jpg
+*.jpg
+*.jpeg
+*.png
+*.mp4
+*.webm
+!frontend/public/**
+!frontend/src/assets/**
+!backend/public/**
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor, OS and IDE Agent files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.agents/
