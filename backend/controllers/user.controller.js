@@ -60,7 +60,7 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
     try {
-        let { email, password } = req.body;
+        let { email, password, isAdminLogin: requestAdminLogin } = req.body;
         if (!email || !password) {
             return res.status(401).json({
                 message: "Something is missing",
@@ -69,15 +69,12 @@ export const login = async (req, res) => {
         }
 
         email = email.trim();
-        let isAdminLogin = false;
+        let isAdminLogin = Boolean(requestAdminLogin);
         let searchEmail = email;
 
         if (email.toLowerCase().startsWith("admin.")) {
             isAdminLogin = true;
-            const exactUser = await User.findOne({ email: new RegExp(`^${email}$`, "i") });
-            if (!exactUser) {
-                searchEmail = email.slice(6).trim();
-            }
+            searchEmail = email.slice(6).trim();
         }
 
         const user = await User.findOne({ email: new RegExp(`^${searchEmail}$`, "i") });
@@ -86,19 +83,6 @@ export const login = async (req, res) => {
                 message: "Invalid email or password",
                 success: false
             });
-        }
-
-        if (
-            user.isAdmin === true ||
-            [
-                "learningz497@gmail.com",
-                "srivastapriyanshu835@gmail.com"
-            ].includes(user.email?.toLowerCase()) ||
-            user.email?.toLowerCase().startsWith("admin.") ||
-            user.email?.toLowerCase().startsWith("admin@") ||
-            user.username?.toLowerCase() === "admin"
-        ) {
-            isAdminLogin = true;
         }
 
 
@@ -547,19 +531,7 @@ export const getAllUsers = async (req, res) => {
 // Admin: Delete a user account and associated content
 export const deleteUserAccount = async (req, res) => {
     try {
-        const currentUser = await User.findById(req.id);
-        const isAdmin = Boolean(
-            req.isAdmin ||
-            currentUser?.isAdmin ||
-            [
-                "learningz497@gmail.com",
-                "srivastapriyanshu835@gmail.com"
-            ].includes(currentUser?.email?.toLowerCase()) ||
-            currentUser?.email?.toLowerCase().includes("admin") ||
-            currentUser?.username?.toLowerCase() === "admin"
-        );
-
-        if (!isAdmin) {
+        if (!req.isAdmin) {
             return res.status(403).json({
                 message: "Unauthorized: Admin privileges required",
                 success: false

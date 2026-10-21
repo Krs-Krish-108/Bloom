@@ -121,6 +121,7 @@ function SignInForm({ onToggle }) {
     email: "",
     password: "",
   });
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -133,7 +134,12 @@ function SignInForm({ onToggle }) {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
+      const payload = {
+        email: input.email.trim(),
+        password: input.password,
+        isAdminLogin: isAdminMode || input.email.toLowerCase().startsWith("admin."),
+      };
+      const res = await axios.post(`${USER_API_END_POINT}/login`, payload, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -160,14 +166,42 @@ function SignInForm({ onToggle }) {
           Bloom
         </h1>
         <h2 className="text-lg font-semibold text-foreground/90 mt-1">
-          Sign in to your account
+          {isAdminMode ? "Admin Sign In" : "Sign in to your account"}
         </h2>
         <p className="text-sm text-muted-foreground">
-          Let's get back there.
+          {isAdminMode
+            ? "Sign in with admin privileges to manage accounts."
+            : "Let's get back there."}
         </p>
       </div>
 
-      <div className="grid gap-4 mt-2">
+      {/* Login Mode Switcher */}
+      <div className="grid grid-cols-2 p-1 bg-neutral-100 rounded-xl text-xs font-semibold select-none -mb-1">
+        <button
+          type="button"
+          onClick={() => setIsAdminMode(false)}
+          className={`py-2 rounded-lg transition-all cursor-pointer ${
+            !isAdminMode
+              ? "bg-white text-neutral-900 shadow-xs"
+              : "text-neutral-500 hover:text-neutral-900"
+          }`}
+        >
+          User Login
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsAdminMode(true)}
+          className={`py-2 rounded-lg transition-all cursor-pointer ${
+            isAdminMode
+              ? "bg-neutral-900 text-white shadow-xs"
+              : "text-neutral-500 hover:text-neutral-900"
+          }`}
+        >
+          Admin Login
+        </button>
+      </div>
+
+      <div className="grid gap-4 mt-1">
         <div className="grid gap-1.5">
           <label htmlFor="signin-email" className="text-sm font-medium text-neutral-700">
             Email
@@ -176,7 +210,7 @@ function SignInForm({ onToggle }) {
             id="signin-email"
             name="email"
             type="text"
-            placeholder="m@example.com (or admin.email)"
+            placeholder={isAdminMode ? "admin.email or your email" : "m@example.com"}
             value={input.email}
             onChange={changeEventHandler}
             required
@@ -201,18 +235,21 @@ function SignInForm({ onToggle }) {
         <button
           type="submit"
           disabled={loading}
-          className="mt-3 flex h-11 w-full items-center justify-center rounded-lg bg-neutral-900 text-white font-medium text-sm transition-all hover:bg-neutral-800 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className="mt-3 flex h-11 w-full items-center justify-center rounded-lg bg-neutral-900 text-white font-medium text-sm transition-all hover:bg-neutral-800 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm cursor-pointer"
         >
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Signing in...
             </>
+          ) : isAdminMode ? (
+            "Sign In as Admin"
           ) : (
             "Sign In"
           )}
         </button>
       </div>
+
 
       <div className="text-center text-sm text-neutral-500">
         Don't have an account?{" "}
