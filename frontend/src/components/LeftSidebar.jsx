@@ -6,6 +6,7 @@ import {
   MessageCircle,
   PlusSquare,
   LayoutGrid,
+  Users,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
@@ -14,8 +15,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { USER_API_END_POINT } from "@/utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
+import { clearUnreadMessages } from "@/redux/chatSlice";
 import CreatePost from "./CreatePost";
 import NotificationDrawer from "./NotificationDrawer";
+import AdminAccountsDrawer from "./AdminAccountsDrawer";
 import BloomLogo from "@/components/ui/BloomLogo";
 
 const LeftSidebar = () => {
@@ -24,10 +27,12 @@ const LeftSidebar = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((store) => store.auth);
   const { likeNotification } = useSelector((store) => store.realTimeNotification);
-  const { selectedUser } = useSelector((store) => store.chat);
+  const { selectedUser, unreadMessages } = useSelector((store) => store.chat);
+
   const [open, setOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isAccountsOpen, setIsAccountsOpen] = useState(false);
 
   const isInActiveChat = location.pathname === "/chat" && Boolean(selectedUser);
 
@@ -51,21 +56,31 @@ const LeftSidebar = () => {
       logoutHandler();
     } else if (textType === "Home") {
       setIsNotificationOpen(false);
+      setIsAccountsOpen(false);
       navigate("/");
     } else if (textType === "Gallery") {
       setIsNotificationOpen(false);
+      setIsAccountsOpen(false);
       navigate("/gallery");
     } else if (textType === "Messages") {
       setIsNotificationOpen(false);
+      setIsAccountsOpen(false);
+      dispatch(clearUnreadMessages());
       navigate("/chat");
     } else if (textType === "Profile") {
       setIsNotificationOpen(false);
+      setIsAccountsOpen(false);
       navigate(`/profile/${user?._id || "my_profile"}`);
     } else if (textType === "Create") {
       setIsNotificationOpen(false);
+      setIsAccountsOpen(false);
       setOpen(true);
     } else if (textType === "Notifications") {
+      setIsAccountsOpen(false);
       setIsNotificationOpen((prev) => !prev);
+    } else if (textType === "Accounts") {
+      setIsNotificationOpen(false);
+      setIsAccountsOpen((prev) => !prev);
     }
   };
 
@@ -81,6 +96,7 @@ const LeftSidebar = () => {
     {
       icon: <MessageCircle className="w-6 h-6 stroke-[2]" />,
       text: "Messages",
+      badge: unreadMessages?.length || 0,
     },
     {
       icon: (
@@ -98,6 +114,21 @@ const LeftSidebar = () => {
       icon: <PlusSquare className="w-6 h-6 stroke-[2]" />,
       text: "Create",
     },
+    ...(user?.isAdmin
+      ? [
+          {
+            icon: (
+              <Users
+                className={`w-6 h-6 stroke-[2] transition-colors ${
+                  isAccountsOpen ? "text-neutral-950 font-bold" : ""
+                }`}
+              />
+            ),
+            text: "Accounts",
+            active: isAccountsOpen,
+          },
+        ]
+      : []),
     {
       icon: (
         <Avatar className="w-6 h-6 border border-neutral-300">
@@ -111,7 +142,7 @@ const LeftSidebar = () => {
     },
   ];
 
-  const sidebarExpanded = isHovered && !isNotificationOpen;
+  const sidebarExpanded = isHovered && !isNotificationOpen && !isAccountsOpen;
 
   return (
     <>
@@ -162,11 +193,19 @@ const LeftSidebar = () => {
             {/* Direct Message Icon */}
             <button
               type="button"
-              onClick={() => navigate("/chat")}
+              onClick={() => {
+                dispatch(clearUnreadMessages());
+                navigate("/chat");
+              }}
               className="relative p-1.5 text-neutral-800 hover:text-black transition-transform active:scale-95 cursor-pointer"
               aria-label="Messages"
             >
               <MessageCircle className="w-6 h-6 stroke-[2]" />
+              {unreadMessages?.length > 0 && (
+                <span className="absolute top-0 right-0 bg-red-600 text-white rounded-full text-[10px] min-w-4 h-4 px-1 flex items-center justify-center font-bold animate-pulse">
+                  {unreadMessages.length}
+                </span>
+              )}
             </button>
           </div>
         </header>
@@ -326,13 +365,21 @@ const LeftSidebar = () => {
           {/* Messages */}
           <button
             type="button"
-            onClick={() => navigate("/chat")}
+            onClick={() => {
+              dispatch(clearUnreadMessages());
+              navigate("/chat");
+            }}
             className={`p-2 transition-transform active:scale-90 relative ${
               location.pathname === "/chat" ? "text-black" : "text-neutral-500"
             }`}
             aria-label="Messages"
           >
             <MessageCircle className="w-6 h-6 stroke-[2]" />
+            {unreadMessages?.length > 0 && (
+              <span className="absolute top-1 right-2 bg-red-600 text-white rounded-full text-[10px] min-w-4 h-4 px-1 flex items-center justify-center font-bold animate-pulse">
+                {unreadMessages.length}
+              </span>
+            )}
           </button>
 
           {/* Profile */}
@@ -362,6 +409,12 @@ const LeftSidebar = () => {
       <NotificationDrawer
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
+      />
+
+      {/* Slide-out Admin Accounts Drawer */}
+      <AdminAccountsDrawer
+        isOpen={isAccountsOpen}
+        onClose={() => setIsAccountsOpen(false)}
       />
 
       <CreatePost open={open} setOpen={setOpen} />

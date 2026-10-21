@@ -3,21 +3,24 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Heart, MessageCircle, Bookmark, Grid, Film, Layers } from "lucide-react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import useGetUserProfile from "@/hooks/useGetUserProfile";
 import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constants";
 import { setAuthUser } from "@/redux/authSlice";
 import { setSelectedPost } from "@/redux/postSlice";
+import { setSelectedUser } from "@/redux/chatSlice";
 import CommentDialog from "./CommentDialog";
 import { toast } from "sonner";
 
 const Profile = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useGetUserProfile(id);
+
 
   const [activeTab, setActiveTab] = useState("posts");
   const [openCommentDialog, setOpenCommentDialog] = useState(false);
@@ -203,8 +206,9 @@ const Profile = () => {
                   {isFollowing ? "Unfollow" : "Follow"}
                 </Button>
                 <Button
+                  onClick={handleMessageUser}
                   variant="secondary"
-                  className="flex-1 h-8 font-semibold text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg"
+                  className="flex-1 h-8 font-semibold text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg cursor-pointer"
                 >
                   Message
                 </Button>
@@ -266,8 +270,9 @@ const Profile = () => {
                     {isFollowing ? "Unfollow" : "Follow"}
                   </Button>
                   <Button
+                    onClick={handleMessageUser}
                     variant="secondary"
-                    className="h-8 font-semibold text-xs px-4"
+                    className="h-8 font-semibold text-xs px-4 hover:bg-gray-200 cursor-pointer"
                   >
                     Message
                   </Button>

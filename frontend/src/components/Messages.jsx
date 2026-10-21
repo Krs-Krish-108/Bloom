@@ -48,7 +48,9 @@ const Messages = ({ selectedUser }) => {
       <div className="flex flex-col gap-2.5">
         {messages &&
           messages.map((msg, index) => {
-            const isSender = msg.senderId === user?._id;
+            const senderIdStr = (msg?.senderId?._id || msg?.senderId)?.toString();
+            const currentUserIdStr = user?._id?.toString();
+            const isSender = Boolean(senderIdStr && currentUserIdStr && senderIdStr === currentUserIdStr);
             return (
               <div
                 key={msg._id || `msg-${index}`}

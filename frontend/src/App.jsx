@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
@@ -12,7 +12,8 @@ import ChatPage from "./components/ChatPage";
 import Gallery from "./components/Gallery";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 import { setSocket } from "./redux/socketSlice";
-import { setOnlineUsers } from "./redux/chatSlice";
+import { setOnlineUsers, addUnreadMessage, appendMessage } from "./redux/chatSlice";
+
 import { setLikeNotification } from "./redux/rtnSlice";
 import { updatePostLikes } from "./redux/postSlice";
 import { BASE_URL } from "./utils/constants";
@@ -60,7 +61,13 @@ const browserRouter = createBrowserRouter([
 
 function App() {
   const { user } = useSelector((store) => store.auth);
+  const { selectedUser } = useSelector((store) => store.chat);
   const dispatch = useDispatch();
+
+  const selectedUserRef = useRef(selectedUser);
+  useEffect(() => {
+    selectedUserRef.current = selectedUser;
+  }, [selectedUser]);
 
   useEffect(() => {
     let socketio;
@@ -84,6 +91,18 @@ function App() {
         dispatch(setLikeNotification(notification));
       });
 
+      // Listen for incoming messages globally
+      socketio.on("newMessage", (newMessage) => {
+        const senderId = (newMessage?.senderId?._id || newMessage?.senderId)?.toString();
+        const currentChatId = selectedUserRef.current?._id?.toString();
+
+        if (currentChatId && currentChatId === senderId) {
+          dispatch(appendMessage(newMessage));
+        } else {
+          dispatch(addUnreadMessage(newMessage));
+        }
+      });
+
       // Listen for real-time post likes updates across all users/browsers
       socketio.on("postLikesUpdated", ({ postId, likes }) => {
         dispatch(updatePostLikes({ postId, likes }));
@@ -97,6 +116,7 @@ function App() {
       dispatch(setSocket(null));
     }
   }, [user, dispatch]);
+
 
   return (
     <>

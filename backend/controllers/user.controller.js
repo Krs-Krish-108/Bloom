@@ -502,4 +502,91 @@ export const followOrUnfollow = async (req, res) => {
             success: false
         });
     }
-}
+};
+
+// Admin: Get all registered user accounts
+export const getAllUsers = async (req, res) => {
+    try {
+        if (!req.isAdmin) {
+            return res.status(403).json({
+                message: "Unauthorized: Admin privileges required",
+                success: false
+            });
+        }
+
+        const users = await User.find({})
+            .select("-password")
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            users,
+            count: users.length
+        });
+    } catch (error) {
+        console.error("Error in getAllUsers:", error);
+        return res.status(500).json({
+            message: "Internal Server error",
+            success: false
+        });
+    }
+};
+
+// Admin: Delete a user account and associated content
+export const deleteUserAccount = async (req, res) => {
+    try {
+        if (!req.isAdmin) {
+            return res.status(403).json({
+                message: "Unauthorized: Admin privileges required",
+                success: false
+            });
+        }
+
+        const targetUserId = req.params.id;
+        if (!mongoose.isValidObjectId(targetUserId)) {
+            return res.status(400).json({
+                message: "Invalid user ID",
+                success: false
+            });
+        }
+
+        // Prevent admin from accidentally deleting their own currently logged-in account
+        if (req.id.toString() === targetUserId.toString()) {
+            return res.status(400).json({
+                message: "You cannot delete your own admin account",
+                success: false
+            });
+        }
+
+        const targetUser = await User.findById(targetUserId);
+        if (!targetUser) {
+            return res.status(404).json({
+                message: "User not found",
+                success: false
+            });
+        }
+
+        // 1. Delete all posts by this user
+        await Post.deleteMany({ author: targetUserId });
+
+        // 2. Remove user from followers and following arrays of all other users
+        await User.updateMany(
+            { $or: [{ followers: targetUserId }, { following: targetUserId }] },
+            { $pull: { followers: targetUserId, following: targetUserId } }
+        );
+
+        // 3. Delete the user document
+        await User.findByIdAndDelete(targetUserId);
+
+        return res.status(200).json({
+            message: `Account @${targetUser.username} deleted successfully`,
+            success: true
+        });
+    } catch (error) {
+        console.error("Error in deleteUserAccount:", error);
+        return res.status(500).json({
+            message: "Internal Server error",
+            success: false
+        });
+    }
+};

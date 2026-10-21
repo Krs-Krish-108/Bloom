@@ -134,3 +134,52 @@ export const getMessage = async (req, res) => {
         });
     }
 };
+
+// Get All Conversations for current user
+export const getConversations = async (req, res) => {
+    try {
+        const userId = req.id;
+        if (!userId) {
+            return res.status(401).json({
+                message: "User not authenticated",
+                success: false
+            });
+        }
+
+        const conversations = await Conversation.find({
+            participants: userId
+        })
+        .sort({ updatedAt: -1 })
+        .populate("participants", "username profilePicture bio")
+        .populate({
+            path: "messages",
+            options: { sort: { createdAt: -1 }, limit: 1 }
+        });
+
+        const chatList = conversations
+            .map(conv => {
+                const partner = conv.participants.find(
+                    p => p._id && p._id.toString() !== userId.toString()
+                );
+                return {
+                    conversationId: conv._id,
+                    user: partner,
+                    lastMessage: conv.messages?.[0] || null,
+                    updatedAt: conv.updatedAt
+                };
+            })
+            .filter(item => Boolean(item.user));
+
+        return res.status(200).json({
+            success: true,
+            conversations: chatList
+        });
+    } catch (error) {
+        console.error("Error in getConversations:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+};
+
