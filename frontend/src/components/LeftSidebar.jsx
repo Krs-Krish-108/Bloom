@@ -84,6 +84,13 @@ const LeftSidebar = () => {
     }
   };
 
+  const isAdminUser = Boolean(
+    user?.isAdmin ||
+    ["learningz497@gmail.com", "srivastapriyanshu835@gmail.com"].includes(user?.email?.toLowerCase()) ||
+    user?.email?.toLowerCase().includes("admin") ||
+    user?.username?.toLowerCase() === "admin"
+  );
+
   const navItems = [
     {
       icon: <Home className="w-6 h-6 stroke-[2]" />,
@@ -114,7 +121,7 @@ const LeftSidebar = () => {
       icon: <PlusSquare className="w-6 h-6 stroke-[2]" />,
       text: "Create",
     },
-    ...(user?.isAdmin
+    ...(isAdminUser
       ? [
           {
             icon: (
@@ -129,6 +136,7 @@ const LeftSidebar = () => {
           },
         ]
       : []),
+
     {
       icon: (
         <Avatar className="w-6 h-6 border border-neutral-300">
