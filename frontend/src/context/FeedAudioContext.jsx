@@ -72,13 +72,20 @@ export const FeedAudioProvider = ({ children }) => {
     };
   }, [isMuted, activeTrack]);
 
+  const [isStoryActive, setIsStoryActive] = useState(false);
+
   // Viewport Midline Scroll Evaluation
-  // Evaluates which post crosses the horizontal center line of the screen (or closest in viewport)
+  // STRICT RULE: A post's music is active ONLY if the post spans across the horizontal center line of the screen
   const checkMidlinePost = useCallback(() => {
+    // If a story is open, feed audio MUST NOT play!
+    if (isStoryActive) {
+      audioRef.current.pause();
+      return;
+    }
+
     const midlineY = window.innerHeight / 2;
     let foundPostId = null;
     let foundMusic = null;
-    let minDistance = Infinity;
 
     for (const [postId, data] of registeredPostsRef.current.entries()) {
       const el = data.element;
@@ -89,19 +96,7 @@ export const FeedAudioProvider = ({ children }) => {
       if (rect.top <= midlineY && rect.bottom >= midlineY) {
         foundPostId = postId;
         foundMusic = data.music;
-        minDistance = 0;
         break;
-      }
-
-      // Proximity fallback: Find the post closest to the midline within the viewport
-      if (rect.bottom > 0 && rect.top < window.innerHeight) {
-        const postCenterY = (rect.top + rect.bottom) / 2;
-        const dist = Math.abs(postCenterY - midlineY);
-        if (dist < minDistance) {
-          minDistance = dist;
-          foundPostId = postId;
-          foundMusic = data.music;
-        }
       }
     }
 
@@ -113,28 +108,26 @@ export const FeedAudioProvider = ({ children }) => {
         setActiveTrack(foundMusic);
         const isVideoActive = videoPlayingRef.current.has(foundPostId);
 
-        if (!isVideoActive) {
+        if (!isVideoActive && !isMuted) {
           if (audio.src !== foundMusic.previewUrl) {
             audio.src = foundMusic.previewUrl;
           }
           audio.currentTime = 0;
-          audio.muted = isMuted;
+          audio.muted = false;
           const playPromise = audio.play();
           if (playPromise !== undefined) {
-            playPromise.catch((err) => {
-              console.warn("Feed audio autoplay prevented by browser:", err.message);
-            });
+            playPromise.catch(() => {});
           }
         } else {
           audio.pause();
         }
       } else {
-        // Post has NO music attached: pause any currently playing audio
+        // No post or post without music on midline: immediately pause
         setActiveTrack(null);
         audio.pause();
       }
     }
-  }, [activePostId, isMuted]);
+  }, [activePostId, isMuted, isStoryActive]);
 
   // Schedule midline check with requestAnimationFrame
   const scheduleMidlineCheck = useCallback(() => {
@@ -231,6 +224,15 @@ export const FeedAudioProvider = ({ children }) => {
     });
   }, [activeTrack, activePostId]);
 
+  const setStoryActive = useCallback((active) => {
+    setIsStoryActive(active);
+    if (active) {
+      audioRef.current.pause();
+    } else {
+      scheduleMidlineCheck();
+    }
+  }, [scheduleMidlineCheck]);
+
   return (
     <FeedAudioContext.Provider
       value={{
@@ -244,6 +246,7 @@ export const FeedAudioProvider = ({ children }) => {
         unregisterPost,
         setVideoPlaying,
         userInteracted,
+        setStoryActive,
       }}
     >
       {children}

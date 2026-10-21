@@ -6,6 +6,7 @@ import { X, ChevronLeft, ChevronRight, Volume2, VolumeX, Pause, Play, Loader2, T
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import AdminTerminalModal from "./AdminTerminalModal";
+import { useFeedAudio } from "@/context/FeedAudioContext";
 
 const DEFAULT_IMAGE_DURATION = 5000;
 
@@ -818,6 +819,7 @@ const StoryViewer = React.forwardRef(
   ) => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [viewedIndices, setViewedIndices] = React.useState(() => new Set());
+    const { setStoryActive } = useFeedAudio();
 
     const firstUnviewedIndex = React.useMemo(() => {
       for (let i = 0; i < stories.length; i++) {
@@ -828,11 +830,13 @@ const StoryViewer = React.forwardRef(
 
     const handleOpen = React.useCallback(() => {
       setIsOpen(true);
-    }, []);
+      setStoryActive?.(true);
+    }, [setStoryActive]);
 
     const handleClose = React.useCallback(() => {
       setIsOpen(false);
-    }, []);
+      setStoryActive?.(false);
+    }, [setStoryActive]);
 
     const handleStoryChange = React.useCallback(
       (index) => {
