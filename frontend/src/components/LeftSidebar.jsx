@@ -133,7 +133,7 @@ const LeftSidebar = () => {
             <button
               type="button"
               onClick={() => setIsNotificationOpen((prev) => !prev)}
-              className="relative p-1.5 text-neutral-800 hover:text-black transition-transform active:scale-95"
+              className="relative p-1.5 text-neutral-800 hover:text-black transition-transform active:scale-95 cursor-pointer"
               aria-label="Notifications"
             >
               <Heart
@@ -148,11 +148,22 @@ const LeftSidebar = () => {
               )}
             </button>
 
+            {/* Logout Button right next to Heart */}
+            <button
+              type="button"
+              onClick={logoutHandler}
+              className="relative p-1.5 text-neutral-800 hover:text-red-600 transition-transform active:scale-95 cursor-pointer"
+              aria-label="Logout"
+              title="Logout"
+            >
+              <LogOut className="w-6 h-6 stroke-[2]" />
+            </button>
+
             {/* Direct Message Icon */}
             <button
               type="button"
               onClick={() => navigate("/chat")}
-              className="relative p-1.5 text-neutral-800 hover:text-black transition-transform active:scale-95"
+              className="relative p-1.5 text-neutral-800 hover:text-black transition-transform active:scale-95 cursor-pointer"
               aria-label="Messages"
             >
               <MessageCircle className="w-6 h-6 stroke-[2]" />
