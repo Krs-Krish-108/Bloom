@@ -34,7 +34,7 @@ const Messages = ({ selectedUser }) => {
           {selectedUser?.username}
         </span>
         <span className="text-xs text-gray-500 mt-0.5">
-          {selectedUser?.bio || "Instagram user"}
+          {selectedUser?.bio || "Bloom L00M user"}
         </span>
         <Link
           to={`/profile/${selectedUser?._id}`}

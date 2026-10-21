@@ -1,7 +1,7 @@
 {
-  "name": "instagram-clone",
+  "name": "bloom-l00m",
   "version": "1.0.0",
-  "description": "Full Stack Instagram Clone using MERN and Socket.io",
+  "description": "Full Stack Bloom L00M Social Platform using MERN, Socket.io, and Gemini AI",
   "main": "backend/server.js",
   "type": "module",
   "scripts": {

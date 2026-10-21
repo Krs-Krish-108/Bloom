@@ -127,7 +127,7 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
       userAvatar:
         topSuggestedUsers[0]?.profilePicture ||
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      actionText: ", who you might know, is on Instagram.",
+      actionText: ", who you might know, is on Bloom L00M.",
       date: "Aug 03",
       isSuggested: true,
       isFromFollowedUser: false,

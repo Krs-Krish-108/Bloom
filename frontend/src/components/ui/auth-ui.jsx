@@ -10,6 +10,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { USER_API_END_POINT } from "@/utils/constants";
 import { setAuthUser } from "@/redux/authSlice";
 import bloomAuthBg from "@/assets/bloom-auth.jpg";
+import BloomLogo from "@/components/ui/BloomLogo";
 
 export function Typewriter({
   text,
@@ -153,11 +154,12 @@ function SignInForm({ onToggle }) {
 
   return (
     <form onSubmit={handleSignIn} autoComplete="on" className="flex flex-col gap-6">
-      <div className="flex flex-col items-center gap-1.5 text-center">
+      <div className="flex flex-col items-center gap-2 text-center">
+        <BloomLogo variant="dark" className="w-11 h-11 object-contain" />
         <h1 className="text-3xl font-bold tracking-tight text-foreground font-serif">
-          Bloom
+          Bloom L00M
         </h1>
-        <h2 className="text-xl font-semibold text-foreground/90 mt-1">
+        <h2 className="text-xl font-semibold text-foreground/90 mt-0.5">
           Sign in to your account
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -263,11 +265,12 @@ function SignUpForm({ onToggle }) {
 
   return (
     <form onSubmit={handleSignUp} autoComplete="on" className="flex flex-col gap-6">
-      <div className="flex flex-col items-center gap-1.5 text-center">
+      <div className="flex flex-col items-center gap-2 text-center">
+        <BloomLogo variant="dark" className="w-11 h-11 object-contain" />
         <h1 className="text-3xl font-bold tracking-tight text-neutral-900 font-serif">
-          Bloom
+          Bloom L00M
         </h1>
-        <h2 className="text-xl font-semibold text-neutral-800 mt-1">
+        <h2 className="text-xl font-semibold text-neutral-800 mt-0.5">
           Create an account
         </h2>
         <p className="text-sm text-neutral-500">
@@ -388,9 +391,10 @@ export function AuthUI({ initialMode = "signIn" }) {
 
         <div className="relative z-10 flex h-full flex-col justify-between p-10 text-white">
           {/* Top Brand Logo */}
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold tracking-tight font-serif">
-              Bloom
+          <div className="flex items-center gap-3">
+            <BloomLogo variant="white" className="w-9 h-9 object-contain drop-shadow" />
+            <span className="text-2xl font-bold tracking-tight font-serif text-white drop-shadow">
+              Bloom L00M
             </span>
           </div>
 
@@ -411,7 +415,7 @@ export function AuthUI({ initialMode = "signIn" }) {
               </p>
             </blockquote>
             <cite className="block text-xs font-medium uppercase tracking-widest text-white/50 not-italic pt-1">
-              — Bloom Social
+              — Bloom L00M
             </cite>
           </div>
         </div>
