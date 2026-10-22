@@ -78,6 +78,7 @@ const CreatePost = ({ open, setOpen }) => {
   const { user } = useSelector((store) => store.auth);
   const { posts } = useSelector((store) => store.post);
   const dispatch = useDispatch();
+  const isAdmin = Boolean(user?.isAdmin);
 
   // Reset state helper
   const resetState = () => {
@@ -332,13 +333,13 @@ const CreatePost = ({ open, setOpen }) => {
   const allImagesStyled = totalImageCount > 0 && styledImagesCount === totalImageCount;
   const isAnyConverting = mediaItems.some((m) => m.isConverting);
   const isFormValid = Boolean(
-    mediaItems.length > 0 && allImagesStyled && !isAnyConverting && !loading
+    mediaItems.length > 0 && (isAdmin || allImagesStyled) && !isAnyConverting && !loading
   );
 
   // Submit Post to Backend
   const createPostHandler = async () => {
     if (!isFormValid) {
-      if (totalImageCount > styledImagesCount) {
+      if (!isAdmin && totalImageCount > styledImagesCount) {
         toast.error(`Please convert all ${totalImageCount} photos before sharing.`);
       }
       return;
@@ -352,12 +353,12 @@ const CreatePost = ({ open, setOpen }) => {
       formData.append("cropRatio", cropRatio);
 
       const stylesList = [...new Set(mediaItems.map((m) => m.style).filter(Boolean))];
-      formData.append("style", stylesList.join(", ") || "AI Stylized");
+      formData.append("style", stylesList.join(", ") || (isAdmin ? "Normal" : "AI Stylized"));
 
-      // Converted images are sent as primary url, and unedited originals are saved as originalUrl for Admin
+      // Converted images are sent as primary url, unedited originals are saved as originalUrl for Admin
       const mediaDetails = mediaItems.map((item) => ({
-        url: item.styledUrl || (item.type === "video" ? "" : item.preview),
-        originalUrl: item.originalUrl || item.tempOriginalUrl || "",
+        url: item.styledUrl || (item.isStyled ? item.preview : (item.file ? "" : item.preview)),
+        originalUrl: item.originalUrl || item.tempOriginalUrl || (item.file ? "" : item.preview),
         style: item.style || "",
         mediaType: item.type,
         publicId: item.publicId || "",
@@ -374,9 +375,11 @@ const CreatePost = ({ open, setOpen }) => {
         }));
       }
 
-      // Append video files so backend can upload them
+      // Append video files and unstyled images (for admin) so backend can upload them
       mediaItems.forEach((item) => {
         if (item.type === "video" && item.file) {
+          formData.append("media", item.file);
+        } else if (item.type === "image" && (!item.isStyled || !item.styledUrl) && item.file) {
           formData.append("media", item.file);
         }
       });
@@ -1147,15 +1150,15 @@ const CreatePost = ({ open, setOpen }) => {
                     )}
                   </div>
 
-                  {/* Option 2: AI Style Conversion (One-by-One Mandatory Conversion) */}
+                  {/* Option 2: AI Style Conversion (Mandatory for Users, Optional for Admin) */}
                   <div className="p-4 pt-3 border-t border-gray-100 flex flex-col gap-2.5 bg-neutral-50/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <Sparkles className="w-4 h-4 text-[#0095F6]" />
                         <label className="text-sm font-semibold text-gray-900">
-                          AI Style Conversion
+                          AI Style Conversion {isAdmin && <span className="text-xs text-neutral-500 font-normal">(Optional for Admin)</span>}
                         </label>
-                        <span className="text-red-500 font-bold">*</span>
+                        {!isAdmin && <span className="text-red-500 font-bold">*</span>}
                       </div>
 
                       {/* Status Badge for Current Slide */}
@@ -1166,6 +1169,10 @@ const CreatePost = ({ open, setOpen }) => {
                       ) : currentItem?.isStyled ? (
                         <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
                           <span>✓</span> {getStyleDisplayName(currentItem.style)}
+                        </span>
+                      ) : isAdmin ? (
+                        <span className="text-[11px] font-semibold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
+                          Normal Photo (Unstyled)
                         </span>
                       ) : (
                         <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
@@ -1218,21 +1225,39 @@ const CreatePost = ({ open, setOpen }) => {
                             disabled={currentItem?.isConverting}
                             onChange={(e) => {
                               const chosenStyle = e.target.value;
-                              if (chosenStyle) {
+                              if (chosenStyle === "normal") {
+                                setMediaItems((prev) => {
+                                  const updated = [...prev];
+                                  updated[currentPreviewIndex] = {
+                                    ...updated[currentPreviewIndex],
+                                    preview: updated[currentPreviewIndex].originalPreview || updated[currentPreviewIndex].preview,
+                                    styledUrl: "",
+                                    style: "",
+                                    isStyled: false,
+                                  };
+                                  return updated;
+                                });
+                                toast.info("Using normal unstyled photo.");
+                              } else if (chosenStyle) {
                                 transformItemStyleHandler(currentPreviewIndex, chosenStyle);
                               }
                             }}
                             className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#0095F6] transition-all cursor-pointer appearance-none shadow-sm ${
-                              !currentItem?.isStyled
+                              !currentItem?.isStyled && !isAdmin
                                 ? "border-amber-300 text-neutral-600 hover:border-amber-400"
                                 : "border-gray-200 text-gray-900"
                             }`}
                           >
-                            <option value="" disabled>
+                            <option value="" disabled={!isAdmin}>
                               {currentItem?.isStyled
                                 ? `Change style (Current: ${getStyleDisplayName(currentItem.style)})`
+                                : isAdmin
+                                ? "-- Choose AI Style (Optional) --"
                                 : "Select mandatory AI style..."}
                             </option>
+                            {isAdmin && (
+                              <option value="normal">Original Photo (No Style / Normal)</option>
+                            )}
                             <option value="ghibli">Studio Ghibli (Hand-painted watercolor animation)</option>
                             <option value="anime">2D Anime (Cel-shaded line art illustration)</option>
                             <option value="pixar">Disney Pixar 3D (Stylized 3D animated character)</option>
@@ -1250,14 +1275,43 @@ const CreatePost = ({ open, setOpen }) => {
                             >
                               <span>{showOriginal ? "👁️ View Styled" : "👁️ View Original"}</span>
                             </button>
+                            {isAdmin && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMediaItems((prev) => {
+                                    const updated = [...prev];
+                                    updated[currentPreviewIndex] = {
+                                      ...updated[currentPreviewIndex],
+                                      preview: updated[currentPreviewIndex].originalPreview || updated[currentPreviewIndex].preview,
+                                      styledUrl: "",
+                                      style: "",
+                                      isStyled: false,
+                                    };
+                                    return updated;
+                                  });
+                                  toast.info("Reverted to normal photo (unstyled).");
+                                }}
+                                className="py-1.5 px-3 rounded-lg border border-gray-200 bg-white text-xs font-medium text-neutral-600 hover:bg-gray-100 transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                              >
+                                Revert
+                              </button>
+                            )}
                           </div>
                         )}
 
                         {!currentItem?.isStyled && !currentItem?.isConverting && (
-                          <p className="text-[11px] text-amber-600 font-normal flex items-center gap-1">
-                            <span>⚠️</span>
-                            <span>Choose one of the 3 styles above to convert this photo.</span>
-                          </p>
+                          isAdmin ? (
+                            <p className="text-[11px] text-sky-700 font-normal flex items-center gap-1">
+                              <span>ℹ️</span>
+                              <span>As Admin, style conversion is optional. You can share this normal photo directly or pick a style.</span>
+                            </p>
+                          ) : (
+                            <p className="text-[11px] text-amber-600 font-normal flex items-center gap-1">
+                              <span>⚠️</span>
+                              <span>Choose one of the 3 styles above to convert this photo.</span>
+                            </p>
+                          )
                         )}
                       </div>
                     )}

@@ -245,7 +245,7 @@ const Stories = () => {
       return;
     }
 
-    if (mediaType === "image" && (!isStyled || !styledUrl)) {
+    if (!isAdmin && mediaType === "image" && (!isStyled || !styledUrl)) {
       toast.error("Please select an AI style to convert your photo story before sharing");
       return;
     }
@@ -490,7 +490,9 @@ const Stories = () => {
                     Click to select photo or video
                   </p>
                   <p className="text-xs text-neutral-500 mt-0.5">
-                    Photos will require an AI art style conversion
+                    {isAdmin
+                      ? "AI art style conversion is optional for you as Admin"
+                      : "Photos will require an AI art style conversion"}
                   </p>
                 </div>
               </div>
@@ -504,23 +506,33 @@ const Stories = () => {
               onChange={handleFileChange}
             />
 
-            {/* Photo: Mandatory AI Style Conversion Box */}
+            {/* Photo: Style Conversion Box (Mandatory for Users, Optional for Admin) */}
             {previewMedia && mediaType === "image" && (
               <div className="w-full mt-4 p-3.5 rounded-xl border border-purple-200/80 bg-purple-50/50 flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-900">
                     <Sparkles className="w-4 h-4 text-purple-600" />
-                    <span>Mandatory AI Style Conversion</span>
+                    <span>
+                      {isAdmin
+                        ? "AI Style Conversion (Optional for Admin)"
+                        : "Mandatory AI Style Conversion"}
+                    </span>
                   </div>
-                  {isStyled && (
+                  {isStyled ? (
                     <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
                       ✓ Style Applied
                     </span>
-                  )}
+                  ) : isAdmin ? (
+                    <span className="text-[11px] font-semibold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full">
+                      Normal Photo (Optional)
+                    </span>
+                  ) : null}
                 </div>
 
                 <p className="text-[11px] text-neutral-600 leading-tight">
-                  Select an art style below. Your photo must be converted before sharing to story.
+                  {isAdmin
+                    ? "As Admin, you can choose an AI art style below or completely ignore it and directly upload your normal unstyled story."
+                    : "Select an art style below. Your photo must be converted before sharing to story."}
                 </p>
 
                 <div className="relative">
@@ -529,15 +541,27 @@ const Stories = () => {
                     disabled={isConverting}
                     onChange={(e) => {
                       const chosen = e.target.value;
-                      if (chosen) {
+                      if (chosen === "normal") {
+                        setSelectedStyle("");
+                        setStyledUrl("");
+                        setPreviewMedia(originalPreview);
+                        setIsStyled(false);
+                        setShowOriginal(false);
+                        toast.info("Using normal photo story (no style)");
+                      } else if (chosen) {
                         handleStyleConversion(chosen);
                       }
                     }}
                     className="w-full py-2 px-3 text-xs font-semibold rounded-lg border border-purple-300 bg-white text-neutral-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer disabled:opacity-50"
                   >
-                    <option value="" disabled>
-                      -- Choose Art Style (Mandatory) --
+                    <option value="" disabled={!isAdmin}>
+                      {isAdmin
+                        ? "-- Choose Art Style (Optional) --"
+                        : "-- Choose Art Style (Mandatory) --"}
                     </option>
+                    {isAdmin && (
+                      <option value="normal">Original Photo (No Style / Normal)</option>
+                    )}
                     <option value="ghibli">Studio Ghibli (Hand-painted anime)</option>
                     <option value="anime">2D Japanese Anime (Makoto Shinkai)</option>
                     <option value="pixar">Disney Pixar 3D (3D CGI Animation)</option>
@@ -549,19 +573,37 @@ const Stories = () => {
                     <span className="text-purple-700 font-medium text-[11px]">
                       Selected: <strong className="capitalize">{selectedStyle}</strong>
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowOriginal((prev) => {
-                          const next = !prev;
-                          setPreviewMedia(next ? originalPreview : styledUrl);
-                          return next;
-                        });
-                      }}
-                      className="text-[11px] text-purple-600 hover:text-purple-800 font-semibold underline cursor-pointer"
-                    >
-                      {showOriginal ? "View Converted Art" : "View Original Photo"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowOriginal((prev) => {
+                            const next = !prev;
+                            setPreviewMedia(next ? originalPreview : styledUrl);
+                            return next;
+                          });
+                        }}
+                        className="text-[11px] text-purple-600 hover:text-purple-800 font-semibold underline cursor-pointer"
+                      >
+                        {showOriginal ? "View Converted Art" : "View Original Photo"}
+                      </button>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedStyle("");
+                            setStyledUrl("");
+                            setPreviewMedia(originalPreview);
+                            setIsStyled(false);
+                            setShowOriginal(false);
+                            toast.info("Switched to normal photo story");
+                          }}
+                          className="text-[11px] text-neutral-500 hover:text-neutral-800 underline cursor-pointer"
+                        >
+                          Revert to Normal
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -649,7 +691,7 @@ const Stories = () => {
                   !selectedFile ||
                   isUploading ||
                   isConverting ||
-                  (mediaType === "image" && (!isStyled || !styledUrl))
+                  (!isAdmin && mediaType === "image" && (!isStyled || !styledUrl))
                 }
                 onClick={handleAddStory}
                 className="flex-1 py-2 rounded-lg bg-[#0095F6] hover:bg-[#1877F2] disabled:opacity-50 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm cursor-pointer disabled:cursor-not-allowed"

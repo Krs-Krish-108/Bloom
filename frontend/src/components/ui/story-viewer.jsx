@@ -672,8 +672,8 @@ function StoryViewerModal({
                 </button>
               )}
 
-              {/* Admin "View Original" / "View Edited" Toggle Button */}
-              {isAdmin && currentStory?.type === "image" && !currentStory?.isSpecialAdminStory && (
+              {/* Admin "View Original" / "View Edited" Toggle Button (Only if story has an AI style applied) */}
+              {isAdmin && currentStory?.type === "image" && !currentStory?.isSpecialAdminStory && Boolean(currentStory?.style) && (
                 <button
                   type="button"
                   onClick={(e) => {

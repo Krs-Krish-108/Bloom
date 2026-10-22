@@ -43,11 +43,13 @@ export const addnewPost = async (req, res) => {
             }
         }
 
-        // Mandatory AI Image Style Verification:
-        // Every image in mediaDetails must have a validated style key and a converted URL
+        const isAdmin = Boolean(user.isAdmin);
+
+        // AI Image Style Verification:
+        // Mandatory for normal users. OPTIONAL for Admin!
         for (const item of uploadedMedia) {
             const isVideo = item.mediaType === "video";
-            if (!isVideo) {
+            if (!isVideo && !isAdmin) {
                 const styleKey = (item.style || "").trim().toLowerCase();
                 if (!isValidStyle(styleKey)) {
                     return res.status(400).json({
@@ -64,7 +66,7 @@ export const addnewPost = async (req, res) => {
             }
         }
 
-        // Collect any uploaded video files from req.files or req.file
+        // Collect any uploaded files from req.files or req.file
         let files = [];
         if (req.files) {
             if (Array.isArray(req.files)) {
@@ -72,12 +74,15 @@ export const addnewPost = async (req, res) => {
             } else {
                 if (req.files.media) files.push(...req.files.media);
                 if (req.files.video) files.push(...req.files.video);
-                // Reject direct image file uploads on /addpost (must use /transform-style first)
+                // Reject direct image file uploads for normal users (must use /transform-style first)
                 if (req.files.image && req.files.image.length > 0) {
-                    return res.status(400).json({
-                        message: "Direct image uploads are not permitted. All photos must be converted via style selection first.",
-                        success: false
-                    });
+                    if (!isAdmin) {
+                        return res.status(400).json({
+                            message: "Direct image uploads are not permitted. All photos must be converted via style selection first.",
+                            success: false
+                        });
+                    }
+                    files.push(...req.files.image);
                 }
             }
         } else if (req.file) {
@@ -90,7 +95,7 @@ export const addnewPost = async (req, res) => {
                             file.originalname.endsWith(".webm") ||
                             file.originalname.endsWith(".mov");
 
-            if (!isVideo) {
+            if (!isVideo && !isAdmin) {
                 return res.status(400).json({
                     message: "Direct image files cannot be uploaded without prior style conversion.",
                     success: false
@@ -98,36 +103,64 @@ export const addnewPost = async (req, res) => {
             }
 
             const fileUri = getDataUri(file);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri, {
-                folder: "bloom_videos",
-                resource_type: "video"
-            });
-
-            const emptySlotIndex = uploadedMedia.findIndex((m) => !m.url && m.mediaType === "video");
-            if (emptySlotIndex !== -1) {
-                uploadedMedia[emptySlotIndex] = {
-                    url: cloudResponse.secure_url,
-                    mediaType: "video",
-                    style: "",
-                    publicId: cloudResponse.public_id
-                };
-            } else {
-                uploadedMedia.push({
-                    url: cloudResponse.secure_url,
-                    mediaType: "video",
-                    style: "",
-                    publicId: cloudResponse.public_id
+            if (isVideo) {
+                const cloudResponse = await cloudinary.uploader.upload(fileUri, {
+                    folder: "bloom_videos",
+                    resource_type: "video"
                 });
+
+                const emptySlotIndex = uploadedMedia.findIndex((m) => !m.url && m.mediaType === "video");
+                if (emptySlotIndex !== -1) {
+                    uploadedMedia[emptySlotIndex] = {
+                        url: cloudResponse.secure_url,
+                        originalUrl: cloudResponse.secure_url,
+                        mediaType: "video",
+                        style: "",
+                        publicId: cloudResponse.public_id
+                    };
+                } else {
+                    uploadedMedia.push({
+                        url: cloudResponse.secure_url,
+                        originalUrl: cloudResponse.secure_url,
+                        mediaType: "video",
+                        style: "",
+                        publicId: cloudResponse.public_id
+                    });
+                }
+            } else {
+                // Admin uploading direct unstyled normal photo
+                const cloudResponse = await cloudinary.uploader.upload(fileUri, {
+                    folder: "bloom_posts/photos",
+                    resource_type: "image"
+                });
+
+                const emptySlotIndex = uploadedMedia.findIndex((m) => !m.url && m.mediaType === "image");
+                if (emptySlotIndex !== -1) {
+                    uploadedMedia[emptySlotIndex] = {
+                        url: cloudResponse.secure_url,
+                        originalUrl: cloudResponse.secure_url,
+                        mediaType: "image",
+                        style: uploadedMedia[emptySlotIndex]?.style || "",
+                        publicId: cloudResponse.public_id
+                    };
+                } else {
+                    uploadedMedia.push({
+                        url: cloudResponse.secure_url,
+                        originalUrl: cloudResponse.secure_url,
+                        mediaType: "image",
+                        style: "",
+                        publicId: cloudResponse.public_id
+                    });
+                }
             }
         }
 
         // Filter and sanitize media items:
-        // Ensure ONLY converted images are saved in post.media (never store original image as post image)
         uploadedMedia = uploadedMedia
             .filter((m) => m && m.url)
             .map((m) => ({
-                url: m.url, // Converted image URL
-                originalUrl: m.originalUrl || m.tempOriginalUrl || "", // Original unedited image URL
+                url: m.url, // Converted image URL, or direct photo URL for admin
+                originalUrl: m.originalUrl || m.tempOriginalUrl || m.url || "", // Original unedited image URL
                 mediaType: m.mediaType || "image",
                 style: m.mediaType === "video" ? "" : (m.style || "").toLowerCase(),
                 publicId: m.publicId || ""
@@ -135,7 +168,7 @@ export const addnewPost = async (req, res) => {
 
         if (uploadedMedia.length === 0) {
             return res.status(400).json({
-                message: "At least one converted photo or video is required to create a post.",
+                message: "At least one photo or video is required to create a post.",
                 success: false
             });
         }

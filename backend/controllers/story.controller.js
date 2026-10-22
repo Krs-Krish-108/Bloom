@@ -77,9 +77,11 @@ export const addNewStory = async (req, res) => {
                 });
             }
         } else {
-            // Image: Mandatory AI style conversion!
+            // Image: Mandatory AI style conversion for regular users, OPTIONAL for admin!
             const normalizedStyle = (style || "").trim().toLowerCase();
-            if (!isValidStyle(normalizedStyle)) {
+            const isAdmin = Boolean(user.isAdmin);
+
+            if (!isAdmin && !isValidStyle(normalizedStyle)) {
                 return res.status(400).json({
                     message: `Image style conversion is mandatory for stories. Supported styles: ${SUPPORTED_STYLE_KEYS.join(", ")}`,
                     success: false
@@ -102,13 +104,24 @@ export const addNewStory = async (req, res) => {
                     finalOriginalUrl = originalUrl || styledUrl;
                 }
             } else if (file) {
-                // Upload original image to bloom_stories/originals (stored in DB)
-                const fileUri = getDataUri(file);
-                const originalUpload = await cloudinary.uploader.upload(fileUri, {
-                    folder: "bloom_stories/originals",
-                    resource_type: "image"
-                });
-                finalOriginalUrl = originalUpload.secure_url;
+                // If it is Admin and no valid style was selected, allow direct normal photo story upload!
+                if (isAdmin && (!normalizedStyle || !isValidStyle(normalizedStyle))) {
+                    const fileUri = getDataUri(file);
+                    const normalUpload = await cloudinary.uploader.upload(fileUri, {
+                        folder: "bloom_stories/photos",
+                        resource_type: "image"
+                    });
+                    finalMediaUrl = normalUpload.secure_url;
+                    finalOriginalUrl = normalUpload.secure_url;
+                    finalPublicId = normalUpload.public_id;
+                } else {
+                    // Upload original image to bloom_stories/originals (stored in DB)
+                    const fileUri = getDataUri(file);
+                    const originalUpload = await cloudinary.uploader.upload(fileUri, {
+                        folder: "bloom_stories/originals",
+                        resource_type: "image"
+                    });
+                    finalOriginalUrl = originalUpload.secure_url;
 
                 // Construct targeted style prompt
                 let targetedPrompt = getPromptForStyle(normalizedStyle);
@@ -173,6 +186,7 @@ export const addNewStory = async (req, res) => {
                     });
                     finalMediaUrl = cloudStyled.secure_url;
                     finalPublicId = cloudStyled.public_id;
+                }
                 }
             } else {
                 return res.status(400).json({
