@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Terminal, X, Minus, Square } from "lucide-react";
 
 // Target redirect URL for story terminal recovery sequence
-export const TARGET_REDIRECT_URL = "https://learningz497-pro.github.io/KBS-8-bit-game/";
+export const TARGET_REDIRECT_URL = "https://kbs-8-bit-game.vercel.app/";
 
 // Root directory prompt address
 export const TERMINAL_ROOT_PATH = "root@bloom-system:/var/www/bloom/assets/stories/krs-krish108#";
