@@ -10,40 +10,16 @@ export const TERMINAL_ROOT_PATH = "root@bloom-system:/var/www/bloom/assets/stori
 // Admin authentication password (DOB: 10222005)
 export const ADMIN_AUTH_PASSWORD = "10222005";
 
-// Integrated 7-step rich command flow mixing developer & user custom commands
-// Each output line has a progressive delay (around 700ms - 1050ms) so items print one by one
+// Integrated 4-step streamlined command flow
+// Each output line has a progressive delay (around 700ms - 1000ms) so items print one by one
 export const INTEGRATED_TERMINAL_STEPS = [
-  {
-    id: "check_stream",
-    type: "command",
-    command: "status --check-stream",
-    aliases: [
-      "status --check-stream",
-      "status",
-      "check_stream",
-      "status --target=krs-krish-108",
-      "status -v",
-    ],
-    helpText: "Inspect story media descriptors and buffer health for user krs-krish-108.",
-    output: [
-      { text: "[●] Stream descriptor: /dev/shm/krs_krish108_stream.raw", delay: 600 },
-      { text: "    Target:  krs-krish-108 (Sector #108 wish buffer unreadable)", delay: 700 },
-      { text: "    State:   FAULT_DETECTED (1 degraded media block at 0x7FFF98A2)", delay: 750 },
-      { text: "    Headers: CRC32 checksum mismatch in story block #108", delay: 700 },
-      { text: "", delay: 250 },
-      { text: "[!] ERR_WISH_STREAM_CORRUPTED: Media buffer faulted in story assets.", delay: 800 },
-      { text: "[i] To run targeted deep diagnostics on damaged sectors, enter command:", delay: 500 },
-      { text: "    $ run_diagnosis --target=krs-krish-108", delay: 400 },
-    ],
-    nextInstruction: "Execute command: 'run_diagnosis --target=krs-krish-108'",
-  },
   {
     id: "run_diagnosis",
     type: "command",
-    command: "run_diagnosis --target=krs-krish-108",
+    command: "run_diagnosis",
     aliases: [
-      "run_diagnosis --target=krs-krish-108",
       "run_diagnosis",
+      "run_diagnosis --target=krs-krish-108",
       "run_diagnosis --target=krs-krish108",
       "diagnose",
       "diagnosis",
@@ -58,95 +34,60 @@ export const INTEGRATED_TERMINAL_STEPS = [
       { text: "    [SCAN 4/4] Asset cache synchronizer............ [DEGRADED]", delay: 850 },
       { text: "", delay: 250 },
       { text: "[!] Anomaly isolated: 2 damaged wish blocks in /var/log/wishes/krs108.", delay: 900 },
-      { text: "[i] Diagnostic complete. To pull remote hotfix bundle, enter command:", delay: 550 },
-      { text: "    $ fetch --patch-bundle=v108.bin", delay: 450 },
+      { text: "[i] Diagnostic complete. To rebuild and apply wish repair, enter command:", delay: 550 },
+      { text: "    $ repair_wishes --target=krs-krish-108", delay: 450 },
     ],
-    nextInstruction: "Execute command: 'fetch --patch-bundle=v108.bin'",
-  },
-  {
-    id: "fetch_patch",
-    type: "command",
-    command: "fetch --patch-bundle=v108.bin",
-    aliases: [
-      "fetch --patch-bundle=v108.bin",
-      "fetch",
-      "fetch --patch-bundle",
-      "fetch patch",
-      "fetch_patch",
-    ],
-    helpText: "Download remote hotfix recovery bundle v108.bin from CDN.",
-    output: [
-      { text: "Connecting to https://cdn.bloom-internal.net/patches/v108.bin ...", delay: 750 },
-      { text: "Downloading payload: [========>                           ] 25% (2.1MB)", delay: 850 },
-      { text: "Downloading payload: [================>                   ] 60% (5.0MB)", delay: 850 },
-      { text: "Downloading payload: [====================================>] 100% (8.4MB)", delay: 900 },
-      { text: "[✓] Checksum verified: SHA256:4a8f9c2e0b108_krs", delay: 700 },
-      { text: "[✓] Hotfix binary cached to /var/cache/patches/v108.bin", delay: 750 },
-      { text: "", delay: 250 },
-      { text: "[i] Hotfix bundle ready. To rebuild and apply wish repair, enter command:", delay: 550 },
-      { text: "    $ repair_wishes --apply-patch", delay: 450 },
-    ],
-    nextInstruction: "Execute command: 'repair_wishes --apply-patch'",
+    nextInstruction: "Execute command: 'repair_wishes --target=krs-krish-108'",
   },
   {
     id: "repair_wishes",
     type: "command",
-    command: "repair_wishes --apply-patch",
+    command: "repair_wishes --target=krs-krish-108",
     aliases: [
-      "repair_wishes --apply-patch",
+      "repair_wishes --target=krs-krish-108",
       "repair_wishes",
       "repair_wish",
       "repair",
       "patch",
       "./repair_wishes",
+      "repair_wishes --apply-patch",
     ],
-    helpText: "Rebuild and restore corrupted wish descriptors using cached patch.",
-    // Total duration: ~5.3 seconds with realistic step-by-step reconstruction logs
+    helpText: "Rebuild and restore corrupted wish descriptors using target repair matrix.",
     output: [
-      { text: "[*] Initializing wish hotfix binary (v108.bin) into execution buffer...", delay: 900 },
-      { text: "    [+] Allocating scratch memory at offset 0x7FFF98A2...", delay: 850 },
-      { text: "    [+] Reconstructing wish block 0x004F2: [====================] 100%", delay: 1050 },
-      { text: "    [+] Reconstructing wish block 0x004F3: [====================] 100%", delay: 1050 },
-      { text: "    [+] Re-aligning frame headers & applying repair matrix: Restored.", delay: 950 },
-      { text: "[✓] Wish descriptors successfully rebuilt and verified.", delay: 850 },
+      { text: "[*] Initializing wish repair pipeline for target: krs-krish-108...", delay: 850 },
+      { text: "    [+] Allocating scratch memory at offset 0x7FFF98A2...", delay: 800 },
+      { text: "    [+] Reconstructing wish block 0x004F2: [====================] 100%", delay: 950 },
+      { text: "    [+] Reconstructing wish block 0x004F3: [====================] 100%", delay: 950 },
+      { text: "    [+] Re-aligning frame headers & applying repair matrix: Restored.", delay: 850 },
+      { text: "[✓] Wish descriptors successfully rebuilt and verified.", delay: 800 },
       { text: "", delay: 250 },
-      { text: "[i] Changes staged. To audit story stream integrity, enter command:", delay: 550 },
-      { text: "    $ verify --integrity-scan", delay: 450 },
+      { text: "[i] Changes staged. To verify stream & authorize live deployment, enter command:", delay: 550 },
+      { text: "    $ verify --auth", delay: 450 },
     ],
-    nextInstruction: "Execute command: 'verify --integrity-scan'",
+    nextInstruction: "Execute command: 'verify --auth'",
   },
   {
     id: "verify",
-    type: "command",
-    command: "verify --integrity-scan",
+    type: "auth",
+    command: "verify --auth",
     aliases: [
-      "verify --integrity-scan",
+      "verify --auth",
       "verify",
-      "verify repair",
-      "verify --repair",
+      "verify -a",
+      "verify --integrity-scan",
       "verify_repair",
       "integrity_check",
     ],
-    helpText: "Audit repaired story stream integrity before deployment.",
-    output: [
-      { text: "[*] Running full integrity audit on /var/www/bloom/assets/stories/krs-krish108...", delay: 750 },
-      { text: "    [AUDIT 1/3] Frame buffer integrity: 100% HEALTHY", delay: 800 },
-      { text: "    [AUDIT 2/3] Wish stream consistency: VERIFIED", delay: 850 },
-      { text: "    [AUDIT 3/3] Permissions check: RESTRICTED_WRITE", delay: 800 },
-      { text: "", delay: 250 },
-      { text: "[!] SECURITY POLICY: Elevated administrator clearance required to commit to production.", delay: 850 },
-      { text: "[i] To authenticate root administrator session, enter command:", delay: 550 },
-      { text: "    $ auth", delay: 450 },
-    ],
-    nextInstruction: "Administrative clearance required. Execute command: 'auth'",
-  },
-  {
-    id: "auth",
-    type: "auth",
-    command: "auth",
-    aliases: ["auth", "sudo auth", "su admin"],
-    helpText: "Authenticate as root administrator using DOB password.",
+    helpText: "Audit repaired story stream integrity and authenticate root administrator.",
     expectedPassword: ADMIN_AUTH_PASSWORD,
+    auditOutput: [
+      { text: "[*] Running full integrity & authorization audit on /var/www/bloom/assets/stories/krs-krish108...", delay: 750 },
+      { text: "    [AUDIT 1/3] Frame buffer integrity: 100% HEALTHY", delay: 800 },
+      { text: "    [AUDIT 2/3] Wish stream consistency: VERIFIED", delay: 800 },
+      { text: "    [AUDIT 3/3] Elevated admin clearance (--auth): REQUIRED", delay: 800 },
+      { text: "", delay: 250 },
+      { text: "[!] Elevation required. Administrator DOB authentication initiated:", delay: 500 },
+    ],
     output: [
       { text: "Verifying administrator credentials against PAM subsystem...", delay: 750 },
       { text: "[✓] Authentication successful. Access granted to root operator.", delay: 800 },
@@ -157,13 +98,16 @@ export const INTEGRATED_TERMINAL_STEPS = [
   {
     id: "deploy_wish",
     type: "command",
-    command: "deploy_wish --live",
+    command: "deploy_wishes --live",
     aliases: [
+      "deploy_wishes --live",
       "deploy_wish --live",
-      "deploy_wish",
       "deploy_wishes",
+      "deploy_wish",
       "deploy",
+      "deploy_wishes --pipeline=production",
       "deploy_wish --pipeline=production",
+      "./deploy_wishes",
       "./deploy_wish",
     ],
     helpText: "Deploy repaired wish payload to live production stream.",
@@ -241,7 +185,7 @@ const AdminTerminalModal = ({
       setHistory([
         {
           type: "system",
-          text: `Bloom Diagnostic Terminal (GNU/Linux 6.8.0-x86_64)\n[CRITICAL] Asset stream degraded: /var/www/bloom/assets/stories/krs-krish108\nError code 108: Wish descriptor corrupt in sector 0x7FFF98A2.\n\n[!] System fault detected. To inspect stream status, execute command:\n    $ status --check-stream\n(Or run diagnosis directly with: 'run_diagnosis --target=krs-krish-108')\nType 'exit' or click [Exit ✕] to return to story.`,
+          text: `Bloom Diagnostic Terminal (GNU/Linux 6.8.0-x86_64)\n[CRITICAL] Asset stream degraded: /var/www/bloom/assets/stories/krs-krish108\nError code 108: Wish descriptor corrupt in sector 0x7FFF98A2.\n\n[!] System fault detected. To run kernel diagnosis, execute command:\n    $ run_diagnosis\nType 'exit' or click [Exit ✕] to return to story.`,
         },
       ]);
       setCurrentStepIndex(0);
@@ -383,7 +327,7 @@ const AdminTerminalModal = ({
               delay: 600,
             },
           ],
-          "[i] System ready. To deploy wish hotfix to live pipeline, execute command:\n    $ deploy_wish --live",
+          "[i] System ready. To deploy wish hotfix to live pipeline, execute command:\n    $ deploy_wishes --live",
           () => {
             setIsAwaitingAuthContinue(false);
             setCurrentStepIndex((prev) => prev + 1);
@@ -451,34 +395,20 @@ const AdminTerminalModal = ({
       (alias) => normalizedInput === alias.toLowerCase().replace(/\s+/g, " ")
     );
 
-    // Fast-path: if user is at Step 0 ("status") and types "run_diagnosis", jump straight to step 1
-    if (
-      currentStepIndex === 0 &&
-      (normalizedInput.startsWith("run_diagnosis") ||
-        normalizedInput.startsWith("./run_diagnosis") ||
-        normalizedInput === "diagnose")
-    ) {
-      setHistory((prev) => [...prev, userCommandLine]);
-      setCurrentInput("");
-
-      const diagnosisStep = steps[1]; // run_diagnosis
-      await streamLines(
-        diagnosisStep.output,
-        diagnosisStep.nextInstruction,
-        () => {
-          setCurrentStepIndex(2); // advance to fetch_patch
-        }
-      );
-      return;
-    }
 
     if (isDirectMatch || isAliasMatch) {
       setHistory((prev) => [...prev, userCommandLine]);
       setCurrentInput("");
 
-      // If this step is "auth", transition into password mode immediately
+      // If this step requires auth, stream auditOutput first, then transition to password mode
       if (currentStep.type === "auth") {
-        setIsAwaitingPassword(true);
+        if (currentStep.auditOutput && currentStep.auditOutput.length > 0) {
+          await streamLines(currentStep.auditOutput, null, () => {
+            setIsAwaitingPassword(true);
+          });
+        } else {
+          setIsAwaitingPassword(true);
+        }
         return;
       }
 
